@@ -1,12 +1,16 @@
 import React from "react";
 
+import "./App.css";
+
 import {
   reconnectProviders,
   initializeProviders,
   WalletProvider,
 } from "@txnlab/use-wallet";
 
-import Home from "./pages/Sandbox";
+import Home from "./pages/Home";
+//import Sandbox from "./pages/Sandbox";
+import AppBar from "./components/AppBar.tsx";
 
 const walletProviders = initializeProviders([]);
 
@@ -16,11 +20,12 @@ function App() {
     reconnectProviders(walletProviders);
   }, []);
   return (
-    <div className="App">
-      <WalletProvider value={walletProviders}>
+    <WalletProvider value={walletProviders}>
+      <div className="App">
+        <AppBar />
         <Home />
-      </WalletProvider>
-    </div>
+      </div>
+    </WalletProvider>
   );
 }
 
