@@ -303,8 +303,7 @@ export default function PrimarySearchAppBar() {
             <Box
               sx={{
                 display: {
-                  xs: "none",
-                  md: "flex",
+                  xs: "flex",
                   alignItems: "center",
                   gap: "1em",
                 },
