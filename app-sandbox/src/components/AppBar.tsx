@@ -183,7 +183,8 @@ export default function PrimarySearchAppBar() {
   );
 
   const mobileMenuId = "primary-search-account-menu-mobile";
-  const renderMobileMenu = (
+  const renderMobileMenu = null;
+  /*
     <Menu
       anchorEl={mobileMoreAnchorEl}
       anchorOrigin={{
@@ -207,7 +208,7 @@ export default function PrimarySearchAppBar() {
         </IconButton>
         <p>Transfers</p>
       </MenuItem>
-      {/*<MenuItem>
+      {<MenuItem>
         <IconButton
           size="large"
           aria-label="show 17 new notifications"
@@ -218,7 +219,7 @@ export default function PrimarySearchAppBar() {
           </Badge>
         </IconButton>
         <p>Notifications</p>
-    </MenuItem>*/}
+    </MenuItem>}
       <MenuItem
         onClick={() => {
           providers?.[0].disconnect();
@@ -237,7 +238,7 @@ export default function PrimarySearchAppBar() {
         <p>Disconnect</p>
       </MenuItem>
     </Menu>
-  );
+    */
 
   React.useEffect(() => {
     if (!activeAccount) return;
@@ -327,8 +328,8 @@ export default function PrimarySearchAppBar() {
               <Box
                 sx={{
                   display: {
-                    xs: "none",
-                    md: "flex",
+                    xs: "flex",
+                    //md: "flex",
                     alignItems: "center",
                     gap: "1em",
                   },
@@ -384,7 +385,7 @@ export default function PrimarySearchAppBar() {
                   />
                 </IconButton>
               </Box>
-              <Box sx={{ display: { xs: "flex", md: "none" } }}>
+              {/*<Box sx={{ display: { xs: "flex", md: "none" } }}>
                 <IconButton
                   size="large"
                   aria-label="show more"
@@ -395,7 +396,7 @@ export default function PrimarySearchAppBar() {
                 >
                   <MoreIcon />
                 </IconButton>
-              </Box>
+            </Box>*/}
             </>
           )}
         </Toolbar>
