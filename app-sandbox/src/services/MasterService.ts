@@ -1,23 +1,50 @@
 import * as backend from "../backend/index.Master.mjs";
+import { makeStdLib } from "../utils/reach.js";
 
 const { REACT_APP_CONTRACT_INFO_MASTER } = process.env;
 const ctcInfoMaster = parseInt(REACT_APP_CONTRACT_INFO_MASTER || "0");
 
-const getReadyEvents = async (stdlib: any, acc: any) => {
-  // TODO: add type
+const stdlib = makeStdLib();
+const bn2n = stdlib.bigNumberToNumber;
+const fa = stdlib.formatAddress;
+
+const getEvents = (eventName: string) => async (addr: string) => {
   const {
-    e: { ready },
-  } = acc.contract(backend, ctcInfoMaster);
+    e: { [eventName]: evt },
+  } = (
+    await stdlib.connectAccount({
+      addr
+    })
+  ).contract(backend, ctcInfoMaster);
   const t = await stdlib.getNetworkTime();
   const events: any = []; // TODO: type
   do {
-    const event = await ready.nextUpToTime(t);
+    const event = await evt.nextUpToTime(t);
     if (!event) break;
     events.push(event);
   } while (events);
   return events;
 };
 
+const getTransferEvents = getEvents("transfer");
+const getReadyEvents = getEvents("ready");
+
+const decodeEvent = (event: any) => {
+  const { what, when } = event;
+  const [ctcInfo, assetInfo, addrFrom, addrTo, amount] = what;
+  const [fAddrFrom, fAddrTo] = [addrFrom, addrTo].map(fa);
+  return {
+    time: bn2n(when),
+    appId: bn2n(ctcInfo),
+    assetId: bn2n(assetInfo),
+    addrFrom: fAddrFrom,
+    addrTo: fAddrTo,
+    amount: bn2n(amount),
+  };
+};
+
 export default {
   getReadyEvents,
+  getTransferEvents,
+  decodeEvent,
 };

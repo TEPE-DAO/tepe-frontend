@@ -1,36 +1,33 @@
-import { useState } from "react";
-import { useWallet } from "@txnlab/use-wallet";
-import { Button, Stack, TextField } from "@mui/material";
+import { Stack, TextField } from "@mui/material";
 import TokenBox from "../../components/TokenBox";
-import ChildService from "../../services/ChildService.ts";
-function SendForm() {
-  const { activeAccount } = useWallet();
-  const [token, setToken] = useState({});
-  const [tokenAmount, setTokenAmount] = useState("");
-  const [accountAddress, setAccountAddress] = useState("");
-  console.log({ token });
-  const handleSubmit = async () =>
-    await ChildService.deposit(
-      token,
-      activeAccount.address,
-      accountAddress,
-      tokenAmount
-    );
+import { useCallback } from "react";
+function SendForm({ setToken, setTokenAmount, setAccountAddress }) {
+  const onTokenChange = useCallback(
+    (_, newValue) => setToken(newValue ?? 0),
+    [setToken]
+  );
+  const onTokenAmountChange = useCallback(
+    (e) => setTokenAmount(e.target.value),
+    [setTokenAmount]
+  );
+  const onAccountAddressChange = useCallback(
+    (e) => setAccountAddress(e.target.value),
+    [setAccountAddress]
+  );
   return (
     <div className="SendForm">
       <Stack spacing={5}>
-        <TokenBox onChange={(_, newValue) => setToken(newValue ?? 0)} />
+        <TokenBox onChange={onTokenChange} />
         <TextField
           label="Token Amount"
           sx={{ width: 300 }}
-          onChange={(e) => setTokenAmount(e.target.value)}
+          onChange={onTokenAmountChange}
         />
         <TextField
           label="Account Address"
           sx={{ width: 300 }}
-          onChange={(e) => setAccountAddress(e.target.value)}
+          onChange={onAccountAddressChange}
         />
-        <Button onClick={handleSubmit}>Send</Button>
       </Stack>
     </div>
   );

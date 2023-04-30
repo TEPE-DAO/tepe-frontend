@@ -4,20 +4,31 @@ import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+import SendIcon from "@mui/icons-material/Send";
 import MoreIcon from "@mui/icons-material/MoreVert";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { useWallet } from "@txnlab/use-wallet";
-import { Button } from "@mui/material";
+import {
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+} from "@mui/material";
 import EjectIcon from "@mui/icons-material/Eject";
+import MasterService from "../services/MasterService.ts";
+import AssetService from "../services/AssetService.ts";
+import AccountBalances from "./AccountBalances/index.js";
+import SendDialog from "./SendDialog/index.js";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -62,11 +73,18 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function PrimarySearchAppBar() {
   const { providers, activeAccount } = useWallet();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [mailAnchorEl, setMailAnchorEl] =
+    React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
+  const [mail, setMail] = React.useState<any>([]);
 
   const isMenuOpen = Boolean(anchorEl);
+  const isMailMenuOpen = Boolean(mailAnchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  const [accountBalanceOpen, setAccountBalanceOpen] = React.useState(false);
+  const [sendFormOpen, setSendFormOpen] = React.useState(false);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -81,16 +99,67 @@ export default function PrimarySearchAppBar() {
     handleMobileMenuClose();
   };
 
+  const handleMailMenuClose = () => {
+    setMailAnchorEl(null);
+    handleMenuClose();
+    handleMobileMenuClose();
+  };
+
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
+  const handleMailMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMailAnchorEl(event.currentTarget);
+  };
+
+  const handleAccountBalanceMenuOpen = (
+    event: React.MouseEvent<HTMLElement>
+  ) => {
+    setAccountBalanceOpen(true);
+  };
+
+  const handleSendMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSendFormOpen(true);
+  };
+
   const menuId = "primary-search-account-menu";
+
+  const renderMailMenu = (
+    <Menu
+      anchorEl={mailAnchorEl}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      id={menuId}
+      keepMounted
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      open={isMailMenuOpen}
+      onClose={handleMailMenuClose}
+    >
+      {mail.map((el: any) => (
+        <MenuItem>
+          <Stack direction="row" spacing={1} style={{ alignItems: "center" }}>
+            <Chip label={el.time} />
+            <span>
+              {el.amount} {el.unitName} from {el.addrFrom.slice(0, 4)}...
+              {el.addrFrom.slice(-4)}
+            </span>
+          </Stack>
+        </MenuItem>
+      ))}
+    </Menu>
+  );
+
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
       anchorOrigin={{
-        vertical: "bottom",
+        vertical: "top",
         horizontal: "right",
       }}
       id={menuId}
@@ -169,6 +238,26 @@ export default function PrimarySearchAppBar() {
       </MenuItem>
     </Menu>
   );
+
+  React.useEffect(() => {
+    if (!activeAccount) return;
+    (async () => {
+      const events = await MasterService.getTransferEvents(
+        activeAccount.address
+      );
+      const dEvents: any = []; // TODO: type
+      for (const event of events) {
+        const dEvent = MasterService.decodeEvent(event);
+        if (dEvent.addrTo === activeAccount.address) {
+          const {
+            params: { decimals, ["unit-name"]: unitName },
+          } = await AssetService.getAsset(dEvent.assetId);
+          dEvents.push({ ...dEvent, decimals, unitName });
+        }
+      }
+      setMail(dEvents);
+    })();
+  }, [activeAccount]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -249,10 +338,27 @@ export default function PrimarySearchAppBar() {
                   size="large"
                   aria-label="show 4 new mails"
                   color="inherit"
+                  onClick={handleSendMenuOpen}
                 >
-                  <Badge badgeContent={1} color="error">
+                  <SendIcon />
+                </IconButton>
+                <IconButton
+                  size="large"
+                  aria-label="show 4 new mails"
+                  color="inherit"
+                  onClick={handleMailMenuOpen}
+                >
+                  <Badge badgeContent={mail.length} color="error">
                     <MailIcon />
                   </Badge>
+                </IconButton>
+                <IconButton
+                  size="large"
+                  aria-label="show 4 new mails"
+                  color="inherit"
+                  onClick={handleAccountBalanceMenuOpen}
+                >
+                  <AccountBalanceWalletIcon />
                 </IconButton>
                 {/*<IconButton
                   size="large"
@@ -295,7 +401,22 @@ export default function PrimarySearchAppBar() {
         </Toolbar>
       </AppBar>
       {renderMobileMenu}
+      {renderMailMenu}
       {renderMenu}
+      <SendDialog open={sendFormOpen} setSendFormOpen={setSendFormOpen} />
+      <Dialog
+        fullScreen={true}
+        open={accountBalanceOpen}
+        onClose={() => setAccountBalanceOpen(false)}
+      >
+        <DialogTitle>Account Balance</DialogTitle>
+        <DialogContent>
+          <AccountBalances />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAccountBalanceOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

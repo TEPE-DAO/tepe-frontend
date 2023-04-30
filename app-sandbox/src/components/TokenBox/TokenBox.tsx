@@ -4,6 +4,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { useWallet } from "@txnlab/use-wallet";
 import { makeStdLib } from "../../utils/reach";
 import MasterService from "../../services/MasterService.ts";
+import AssetService from "../../services/AssetService.ts";
 
 const stdlib = makeStdLib();
 
@@ -14,29 +15,28 @@ export default function ComboBox(props) {
   const [events, setEvents] = useState<any>(null);
   const [options, setOptions] = useState<any>(null);
   useEffect(() => {
-    if (!activeAccount) return;
+    //if (!activeAccount) return;
     (async () => {
-      const acc = await stdlib.connectAccount({ addr: activeAccount?.address });
-      const events = await MasterService.getReadyEvents(stdlib, acc);
+      const events = await MasterService.getReadyEvents(
+        activeAccount?.address ??
+          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      );
       setEvents(events);
     })();
   }, [activeAccount]);
   useEffect(() => {
     if (!events) return;
     (async () => {
-      const { indexer } = await stdlib.getProvider();
       const options: any = [];
       for (const e of events) {
-        const { indexer } = await stdlib.getProvider();
-        const { asset } = await indexer.lookupAssetByID(bn2n(e.what[1])).do();
-        console.log({ asset });
+        const assetId = bn2n(e.what[1]);
+        const asset = await AssetService.getAsset(assetId);
         options.push([bn2n(e.when), ...e.what.map(bn2n), asset.params]);
       }
       setOptions(options);
     })();
   }, [events]);
   return (
-    activeAccount &&
     options && (
       <Autocomplete
         disabled={!options}
