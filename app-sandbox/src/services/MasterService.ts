@@ -1,3 +1,4 @@
+import { eventNames } from "process";
 import * as backend from "../backend/index.Master.mjs";
 import { makeStdLib } from "../utils/reach.js";
 
@@ -8,15 +9,18 @@ const stdlib = makeStdLib();
 const bn2n = stdlib.bigNumberToNumber;
 const fa = stdlib.formatAddress;
 
-const getEvents = (eventName: string) => async (addr: string) => {
+const getEvents = (eventName: string) => async (addr: string, time?: any) => {
   const {
     e: { [eventName]: evt },
   } = (
     await stdlib.connectAccount({
-      addr
+      addr,
     })
   ).contract(backend, ctcInfoMaster);
   const t = await stdlib.getNetworkTime();
+  if (time) {
+    await evt.seek(time);
+  }
   const events: any = []; // TODO: type
   do {
     const event = await evt.nextUpToTime(t);
@@ -29,6 +33,7 @@ const getEvents = (eventName: string) => async (addr: string) => {
 const getTransferEvents = getEvents("transfer");
 const getReadyEvents = getEvents("ready");
 
+// ? decode what event
 const decodeEvent = (event: any) => {
   const { what, when } = event;
   const [ctcInfo, assetInfo, addrFrom, addrTo, amount] = what;

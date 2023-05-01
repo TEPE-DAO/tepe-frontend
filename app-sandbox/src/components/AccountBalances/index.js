@@ -27,7 +27,9 @@ const bn = stdlib.bigNumberify;
 const bn2n = stdlib.bigNumberToNumber;
 function AccountBalances() {
   const { activeAccount } = useWallet();
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState(
+    JSON.parse(localStorage.getItem(`tokens`) ?? "{}")
+  );
   const handleDeposit = useCallback(
     async (token) => {
       if (!activeAccount) return;
@@ -55,14 +57,39 @@ function AccountBalances() {
     },
     [activeAccount]
   );
-
   const reloadTokens = useCallback(async () => {
     if (!activeAccount) return;
-    const events = await MasterService.getReadyEvents(activeAccount.address);
+
+    // -------------------------------------------
+    // use stored ready events and seek if needed
+    // -------------------------------------------
+    const storedReadyEvents = JSON.parse(
+      localStorage.getItem("event-ready") ?? "{}"
+    );
+    const events = !storedReadyEvents.time
+      ? await MasterService.getReadyEvents(activeAccount.address)
+      : await MasterService.getReadyEvents(
+          activeAccount.address,
+          storedReadyEvents.time
+        );
+    const newEvents = [...(storedReadyEvents?.events ?? []), ...events];
+    localStorage.setItem(
+      "event-ready",
+      JSON.stringify({
+        time: await stdlib.getNetworkTime(),
+        events: newEvents,
+      })
+    );
+    // -------------------------------------------
+    // get tokens from events
+    // and balances for active account
+    // -------------------------------------------
     const tokens = [];
-    for (const event of events) {
+    let time = bn(0);
+    for (const event of newEvents) {
       const {
         what: [ctcInfoBn, assetInfoBn],
+        when,
       } = event;
       const appId = bn2n(ctcInfoBn);
       const assetId = bn2n(assetInfoBn);
@@ -74,17 +101,20 @@ function AccountBalances() {
         await ChildService.balanceOf({ appId }, activeAccount.address),
         bn(0)
       );
-
       const amount = stdlib.formatWithDecimals(amountBn, decimals);
-
-      console.log({ amount });
+      time = bn2n(when);
       tokens.push({ appId, assetId, decimals, name, symbol, amount });
     }
-    setTokens(tokens);
+    localStorage.setItem(`tokens`, JSON.stringify({ time, tokens }));
+    setTokens({ time, tokens });
   }, [activeAccount]);
+  // -------------------------------------------
+  // effect: reload tokens on account change
+  // -------------------------------------------
   useEffect(() => {
     reloadTokens();
   }, [activeAccount]);
+  // -------------------------------------------
   return (
     <div className="AccountBalances">
       <Table>
@@ -99,7 +129,7 @@ function AccountBalances() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {tokens.map((token) => (
+          {tokens?.tokens?.map((token) => (
             <TableRow key={token.appId}>
               <TableCell>{token.assetId}</TableCell>
               <TableCell>{token.name}</TableCell>
