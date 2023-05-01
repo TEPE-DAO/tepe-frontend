@@ -29,6 +29,8 @@ import MasterService from "../services/MasterService.ts";
 import AssetService from "../services/AssetService.ts";
 import AccountBalances from "./AccountBalances/index.js";
 import SendDialog from "./SendDialog/index.js";
+import { zeroAddress } from "../utils/algorand.js";
+import { makeStdLib } from "../utils/reach.js";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -69,6 +71,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
   },
 }));
+
+const stdlib = makeStdLib();
 
 export default function PrimarySearchAppBar() {
   const { providers, activeAccount } = useWallet();
@@ -141,8 +145,8 @@ export default function PrimarySearchAppBar() {
       open={isMailMenuOpen}
       onClose={handleMailMenuClose}
     >
-      {mail.map((el: any) => (
-        <MenuItem>
+      {mail.map((el: any, i: number) => (
+        <MenuItem key={`mail-${i}`}>
           <Stack direction="row" spacing={1} style={{ alignItems: "center" }}>
             <Chip label={el.time} />
             <span>
@@ -243,11 +247,30 @@ export default function PrimarySearchAppBar() {
   React.useEffect(() => {
     if (!activeAccount) return;
     (async () => {
-      const events = await MasterService.getTransferEvents(
-        activeAccount.address
+      // -------------------------------------------
+      // use stored ready events and seek if needed
+      // -------------------------------------------
+      const storedEvents = JSON.parse(
+        localStorage.getItem(`event-transfer`) ?? "{}"
+      );
+      const events = !storedEvents.time
+        ? await MasterService.getTransferEvents(
+            activeAccount?.address ?? zeroAddress
+          )
+        : await MasterService.getTransferEvents(
+            activeAccount?.address ?? zeroAddress,
+            storedEvents.time
+          );
+      const newEvents = [...(storedEvents?.events ?? []), ...events];
+      localStorage.setItem(
+        "event-transfer",
+        JSON.stringify({
+          time: await stdlib.getNetworkTime(),
+          events: newEvents,
+        })
       );
       const dEvents: any = []; // TODO: type
-      for (const event of events) {
+      for (const event of storedEvents?.events ?? []) {
         const dEvent = MasterService.decodeEvent(event);
         if (dEvent.addrTo === activeAccount.address) {
           const {
@@ -256,7 +279,17 @@ export default function PrimarySearchAppBar() {
           dEvents.push({ ...dEvent, decimals, unitName });
         }
       }
+      for (const event of events) {
+        const dEvent = MasterService.decodeEvent(event);
+        if (dEvent.addrTo === activeAccount.address) {
+          const {
+            params: { decimals, ["unit-name"]: unitName },
+          } = await AssetService.getAsset(dEvent.assetId);
+          dEvents.push({ ...dEvent, decimals, unitName, new: true });
+        }
+      }
       setMail(dEvents);
+      // -------------------------------------------
     })();
   }, [activeAccount]);
 
@@ -348,7 +381,10 @@ export default function PrimarySearchAppBar() {
                   color="inherit"
                   onClick={handleMailMenuOpen}
                 >
-                  <Badge badgeContent={mail.length} color="error">
+                  <Badge
+                    badgeContent={mail.filter((el: any) => el.new).length} // TODO: type
+                    color="error"
+                  >
                     <MailIcon />
                   </Badge>
                 </IconButton>
@@ -404,6 +440,7 @@ export default function PrimarySearchAppBar() {
       {renderMailMenu}
       {renderMenu}
       <SendDialog open={sendFormOpen} setSendFormOpen={setSendFormOpen} />
+      {/* TODO move this into component like SendDialog */}
       <Dialog
         fullScreen={true}
         open={accountBalanceOpen}

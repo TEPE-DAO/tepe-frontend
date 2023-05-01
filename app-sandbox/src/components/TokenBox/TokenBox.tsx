@@ -22,18 +22,18 @@ export default function ComboBox(props) {
       // -------------------------------------------
       // use stored ready events and seek if needed
       // -------------------------------------------
-      const storedReadyEvents = JSON.parse(
+      const storedEvents = JSON.parse(
         localStorage.getItem("event-ready") ?? "{}"
       );
-      const events = !storedReadyEvents.time
+      const events = !storedEvents.time
         ? await MasterService.getReadyEvents(
             activeAccount?.address ?? zeroAddress
           )
         : await MasterService.getReadyEvents(
             activeAccount?.address ?? zeroAddress,
-            storedReadyEvents.time
+            storedEvents.time
           );
-      const newEvents = [...(storedReadyEvents?.events ?? []), ...events];
+      const newEvents = [...(storedEvents?.events ?? []), ...events];
       localStorage.setItem(
         "event-ready",
         JSON.stringify({
