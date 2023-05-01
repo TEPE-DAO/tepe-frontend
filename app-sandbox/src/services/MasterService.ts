@@ -36,9 +36,10 @@ const getReadyEvents = getEvents("ready");
 // ? decode what event
 const decodeEvent = (event: any) => {
   const { what, when } = event;
-  const [ctcInfo, assetInfo, addrFrom, addrTo, amount] = what;
+  const [[type, [ctcInfo, assetInfo, addrFrom, addrTo, amount]]] = what;
   const [fAddrFrom, fAddrTo] = [addrFrom, addrTo].map(fa);
   return {
+    type,
     time: bn2n(when),
     appId: bn2n(ctcInfo),
     assetId: bn2n(assetInfo),

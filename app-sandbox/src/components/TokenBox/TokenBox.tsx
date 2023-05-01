@@ -50,9 +50,14 @@ export default function ComboBox(props) {
     (async () => {
       const options: any = [];
       for (const e of events) {
-        const assetId = bn2n(e.what[1]);
+        const { what, when } = e;
+        const [[appIdBn, assetIdBn]] = what;
+        const appId = bn2n(appIdBn);
+        const assetId = bn2n(assetIdBn);
+        const time = bn2n(when);
         const asset = await AssetService.getAsset(assetId);
-        options.push([bn2n(e.when), ...e.what.map(bn2n), asset.params]);
+        const option = [time, appId, assetId, asset.params];
+        options.push(option);
       }
       setOptions(options);
     })();

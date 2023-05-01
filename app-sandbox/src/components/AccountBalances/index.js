@@ -50,7 +50,6 @@ function AccountBalances() {
         ),
         token.decimals
       );
-      console.log({ amount });
       const addr = activeAccount.address;
       await ChildService.withdraw(token, addr, addr, amount);
       await reloadTokens();
@@ -88,7 +87,7 @@ function AccountBalances() {
     let time = bn(0);
     for (const event of newEvents) {
       const {
-        what: [ctcInfoBn, assetInfoBn],
+        what: [[ctcInfoBn, assetInfoBn]],
         when,
       } = event;
       const appId = bn2n(ctcInfoBn);
@@ -122,7 +121,7 @@ function AccountBalances() {
           <TableRow>
             <TableCell>Token ID</TableCell>
             <TableCell>Token Name</TableCell>
-            {/*<TableCell>Token Symbol</TableCell>*/}
+            {<TableCell>Token Symbol</TableCell>}
             {/*<TableCell>Token Decimals</TableCell>*/}
             <TableCell>Balance</TableCell>
             <TableCell>Action</TableCell>
@@ -133,7 +132,7 @@ function AccountBalances() {
             <TableRow key={token.appId}>
               <TableCell>{token.assetId}</TableCell>
               <TableCell>{token.name}</TableCell>
-              {/*<TableCell>{token.symbol}</TableCell>*/}
+              {<TableCell>{token.symbol}</TableCell>}
               {/*<TableCell>{token.decimals}</TableCell>*/}
               <TableCell>
                 {token.amount}&nbsp;{token.symbol}
