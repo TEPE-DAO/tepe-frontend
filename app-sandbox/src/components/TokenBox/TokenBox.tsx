@@ -5,6 +5,7 @@ import { useWallet } from "@txnlab/use-wallet";
 import { makeStdLib } from "../../utils/reach";
 import MasterService from "../../services/MasterService.ts";
 import AssetService from "../../services/AssetService.ts";
+import { zeroAddress } from "../../utils/algorand";
 
 const stdlib = makeStdLib();
 
@@ -12,16 +13,36 @@ const bn2n = stdlib.bigNumberToNumber;
 
 export default function ComboBox(props) {
   const { activeAccount } = useWallet();
-  const [events, setEvents] = useState<any>(null);
+  const [events, setEvents] = useState<any>(
+    JSON.parse(localStorage.getItem("event-ready") ?? "{}")?.events ?? []
+  );
   const [options, setOptions] = useState<any>(null);
   useEffect(() => {
-    //if (!activeAccount) return;
     (async () => {
-      const events = await MasterService.getReadyEvents(
-        activeAccount?.address ??
-          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+      // -------------------------------------------
+      // use stored ready events and seek if needed
+      // -------------------------------------------
+      const storedReadyEvents = JSON.parse(
+        localStorage.getItem("event-ready") ?? "{}"
       );
-      setEvents(events);
+      const events = !storedReadyEvents.time
+        ? await MasterService.getReadyEvents(
+            activeAccount?.address ?? zeroAddress
+          )
+        : await MasterService.getReadyEvents(
+            activeAccount?.address ?? zeroAddress,
+            storedReadyEvents.time
+          );
+      const newEvents = [...(storedReadyEvents?.events ?? []), ...events];
+      localStorage.setItem(
+        "event-ready",
+        JSON.stringify({
+          time: await stdlib.getNetworkTime(),
+          events: newEvents,
+        })
+      );
+      setEvents(newEvents);
+      // -------------------------------------------
     })();
   }, [activeAccount]);
   useEffect(() => {
