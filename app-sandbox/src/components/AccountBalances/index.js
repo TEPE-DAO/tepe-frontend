@@ -119,7 +119,8 @@ function AccountBalances() {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Token ID</TableCell>
+            <TableCell>Token Asset ID</TableCell>
+            <TableCell>Token Contract ID</TableCell>
             <TableCell>Token Name</TableCell>
             {<TableCell>Token Symbol</TableCell>}
             {/*<TableCell>Token Decimals</TableCell>*/}
@@ -131,6 +132,7 @@ function AccountBalances() {
           {tokens?.tokens?.map((token) => (
             <TableRow key={token.appId}>
               <TableCell>{token.assetId}</TableCell>
+              <TableCell>{token.appId}</TableCell>
               <TableCell>{token.name}</TableCell>
               {<TableCell>{token.symbol}</TableCell>}
               {/*<TableCell>{token.decimals}</TableCell>*/}

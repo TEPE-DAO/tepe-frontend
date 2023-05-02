@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useWallet } from "@txnlab/use-wallet";
 
 import * as masterBackend from "../../backend/index.Master.mjs";
-import * as childBackend from "../../backend/index.Child.mjs";
+import * as childBackend from "../../backend/drop/index.Child.mjs";
 
 import { loadStdlib } from "@reach-sh/stdlib";
 import WalletConnect from "@walletconnect/client";

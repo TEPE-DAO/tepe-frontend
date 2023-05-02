@@ -1,9 +1,14 @@
 import { eventNames } from "process";
-import * as backend from "../backend/index.Master.mjs";
+import * as backend from "../backend/drop/index.Master.mjs";
 import { makeStdLib } from "../utils/reach.js";
 
+/*
 const { REACT_APP_CONTRACT_INFO_MASTER } = process.env;
 const ctcInfoMaster = parseInt(REACT_APP_CONTRACT_INFO_MASTER || "0");
+*/
+
+const ctcInfoMaster = 208941015;
+
 
 const stdlib = makeStdLib();
 const bn2n = stdlib.bigNumberToNumber;
