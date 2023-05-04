@@ -7,7 +7,7 @@ const { REACT_APP_CONTRACT_INFO_MASTER } = process.env;
 const ctcInfoMaster = parseInt(REACT_APP_CONTRACT_INFO_MASTER || "0");
 */
 
-const ctcInfoMaster = 208946742;
+const ctcInfoMaster = 210034179;
 
 const stdlib = makeStdLib();
 const bn2n = stdlib.bigNumberToNumber;
