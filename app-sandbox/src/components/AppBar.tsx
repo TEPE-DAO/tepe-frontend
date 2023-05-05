@@ -23,12 +23,15 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
+  Tooltip,
 } from "@mui/material";
 import EjectIcon from "@mui/icons-material/Eject";
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import MasterService from "../services/MasterService.ts";
 import AssetService from "../services/AssetService.ts";
 import AccountBalances from "./AccountBalances/index.js";
 import SendDialog from "./SendDialog/index.js";
+import SubscriptionDialog from "./SubscriptionDialog/index.js";
 import { zeroAddress } from "../utils/algorand.js";
 import { makeStdLib } from "../utils/reach.js";
 
@@ -89,6 +92,7 @@ export default function PrimarySearchAppBar() {
 
   const [accountBalanceOpen, setAccountBalanceOpen] = React.useState(false);
   const [sendFormOpen, setSendFormOpen] = React.useState(false);
+  const [subscriptionFormOpen, setSubscriptionFormOpen] = React.useState(false);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -125,6 +129,10 @@ export default function PrimarySearchAppBar() {
 
   const handleSendMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setSendFormOpen(true);
+  };
+
+  const handleSubscriptionMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSubscriptionFormOpen(true);
   };
 
   const menuId = "primary-search-account-menu";
@@ -367,6 +375,16 @@ export default function PrimarySearchAppBar() {
                   },
                 }}
               >
+                <Tooltip title="Subscriptions">
+                  <IconButton
+                    size="large"
+                    aria-label="show 4 new mails"
+                    color="inherit"
+                    onClick={handleSubscriptionMenuOpen}
+                  >
+                    <CurrencyExchangeIcon />
+                  </IconButton>
+                </Tooltip>
                 <IconButton
                   size="large"
                   aria-label="show 4 new mails"
@@ -439,7 +457,11 @@ export default function PrimarySearchAppBar() {
       {renderMobileMenu}
       {renderMailMenu}
       {renderMenu}
-      <SendDialog open={sendFormOpen} setSendFormOpen={setSendFormOpen} />
+      <SendDialog open={sendFormOpen} setOpen={setSendFormOpen} />
+      <SubscriptionDialog
+        open={subscriptionFormOpen}
+        setOpen={setSubscriptionFormOpen}
+      />
       {/* TODO move this into component like SendDialog */}
       <Dialog
         fullScreen={true}

@@ -50,7 +50,7 @@ function SendDialog(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => props.setSendFormOpen(false)}>Close</Button>
+          <Button onClick={() => props.setOpen(false)}>Close</Button>
           <Button onClick={handleSubmit}>Send</Button>
         </DialogActions>
       </Dialog>

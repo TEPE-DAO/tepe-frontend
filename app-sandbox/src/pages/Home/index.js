@@ -7,7 +7,7 @@ function Home() {
     <div className="Home">
       <Stack>
         <Stack direction="row" style={{ alignItems: "baseline" }}>
-          <Typography variant="h1">Drop</Typography>
+          <Typography variant="h1">TEPE</Typography>
           <small>Beta</small>
         </Stack>
         <Stack direction="row" gap="1em">
