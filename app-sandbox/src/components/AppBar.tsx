@@ -27,6 +27,7 @@ import {
 } from "@mui/material";
 import EjectIcon from "@mui/icons-material/Eject";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import GavelIcon from "@mui/icons-material/Gavel";
 import MasterService from "../services/MasterService.ts";
 import AssetService from "../services/AssetService.ts";
 import AccountBalances from "./AccountBalances/index.js";
@@ -375,6 +376,16 @@ export default function PrimarySearchAppBar() {
                   },
                 }}
               >
+                <Tooltip title="Auctions">
+                  <IconButton
+                    size="large"
+                    aria-label="show 4 new mails"
+                    color="inherit"
+                    onClick={() => {}}
+                  >
+                    <GavelIcon />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Subscriptions">
                   <IconButton
                     size="large"
