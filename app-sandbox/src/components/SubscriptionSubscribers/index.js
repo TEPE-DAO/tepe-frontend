@@ -21,14 +21,11 @@ import SubscriptionService, {
 } from "../../services/SubscriptionService.ts";
 import { makeStdLib } from "../../utils/reach";
 import { fromSome } from "../../utils/common";
-import SendIcon from "@mui/icons-material/Send";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
 import { zeroAddress } from "../../utils/algorand";
 const stdlib = makeStdLib();
-console.log(stdlib);
 const bn = stdlib.bigNumberify;
 const bn2n = stdlib.bigNumberToNumber;
+const fa = stdlib.formatAddress;
 function SubscriptionSubscribers() {
   const { activeAccount } = useWallet();
   const [subscriptions, setSubscriptions] = useState(
@@ -36,141 +33,127 @@ function SubscriptionSubscribers() {
   );
   const reloadSubscriptions = useCallback(async () => {
     if (!activeAccount) return;
-    const eventName = "subscribe";
-    const storedEvents = JSON.parse(
-      localStorage.getItem(`event-${eventName}`) ?? "{}"
-    );
-    const events = !storedEvents.time
-      ? await SubscriptionService.Master.getEvents(eventName)(
-          activeAccount.address
-        )
-      : await SubscriptionService.Master.getEvents(eventName)(
-          activeAccount.address,
-          storedEvents.time
-        );
-    const newEvents = [...(storedEvents?.events ?? []), ...events];
-    localStorage.setItem(
-      `event-${eventName}`,
-      JSON.stringify({
-        time: await stdlib.getNetworkTime(),
-        events: newEvents,
-      })
-    );
-    console.log({ newEvents });
+
+    let deleteEvents = [];
+    do {
+      const eventName = "delete";
+      const eventStorageKey = `event-${eventName}`;
+      const storedEvents = JSON.parse(
+        localStorage.getItem(eventStorageKey) ?? "{}"
+      );
+      const events = !storedEvents.time
+        ? await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address
+          )
+        : await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address,
+            storedEvents.time
+          );
+      const newEvents = [...(storedEvents?.events ?? []), ...events];
+      localStorage.setItem(
+        eventStorageKey,
+        JSON.stringify({
+          time: await stdlib.getNetworkTime(),
+          events: newEvents,
+        })
+      );
+      deleteEvents = newEvents;
+    } while (0);
+    const deletedProviderAppIds = deleteEvents
+      .filter((el) => el.what[0][0] === "DeleteProvider")
+      .map((el) => bn2n(el.what[0][1][0]));
+    /*
+    const deletedSubscriptions = deleteEvents
+      .filter(
+        (el) =>
+          el.what[0][0] === "DeleteSubscription" &&
+          deletedProviderAppIds.includes(bn2n(el.what[0][1][0]))
+      )
+      .map((el) => el.what[0][1]);
+    */
+
+    let subscribeEvents = [];
+    do {
+      const eventName = "subscribe";
+      const eventStorageKey = `event-${eventName}`;
+      const storedEvents = JSON.parse(
+        localStorage.getItem(eventStorageKey) ?? "{}"
+      );
+      const events = !storedEvents.time
+        ? await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address
+          )
+        : await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address,
+            storedEvents.time
+          );
+      const newEvents = [...(storedEvents?.events ?? []), ...events];
+      localStorage.setItem(
+        eventStorageKey,
+        JSON.stringify({
+          time: await stdlib.getNetworkTime(),
+          events: newEvents,
+        })
+      );
+      subscribeEvents = newEvents;
+    } while (0);
+
     const subscriptions = [];
     const hash = {};
     let time = bn(0);
-    for (const event of newEvents) {
+    for (const event of subscribeEvents) {
+      const eventName = "subscribe";
       const {
         appId,
         assetId: assetAppId,
         providerAddress,
         subscriberAddress,
-        time: lastTime,
       } = SubscriptionService.Master.decodeEvent(eventName)(event);
-      if (hash[appId]) continue;
-      if (subscriberAddress === activeAccount.address) {
-        // get subscription
-        const { remaining, lastTime, active } = decodeSubscription(
-          await SubscriptionService.Child.subscription(
-            appId,
-            providerAddress,
-            subscriberAddress
-          )
-        );
 
-        if (!active) continue;
+      const subscriptionKey = `${appId}-${assetAppId}-${providerAddress}-${subscriberAddress}`;
 
-        time = lastTime;
+      if (deletedProviderAppIds.includes(bn2n(appId))) continue;
+      if (hash[subscriptionKey]) continue;
+      if (subscriberAddress !== activeAccount.address) continue;
 
-        const { token: tokenBn } = fromSome(
-          await ChildService.state({ appId: assetAppId }),
-          {}
-        );
-        const assetId = bn2n(tokenBn);
-        const asset = await AssetService.getAsset(assetId);
-        const {
-          params: { decimals, name, ["unit-name"]: symbol },
-        } = asset;
-        subscriptions.push({
+      const { remaining, lastTime, active } = decodeSubscription(
+        await SubscriptionService.Child.subscription(
           appId,
-          assetAppId,
-          assetId,
-          decimals,
-          symbol,
           providerAddress,
-          subscriberAddress,
-          time: bn2n(time),
-          remaining,
-        });
-        hash[appId] = 1;
-      }
+          subscriberAddress
+        )
+      );
+      if (!active) continue;
+
+      time = lastTime;
+
+      const { token: tokenBn } = fromSome(
+        await ChildService.state({ appId: assetAppId }),
+        {}
+      );
+      const assetId = bn2n(tokenBn);
+      const asset = await AssetService.getAsset(assetId);
+      const {
+        params: { decimals, name, ["unit-name"]: symbol },
+      } = asset;
+      subscriptions.push({
+        appId,
+        assetAppId,
+        assetId,
+        decimals,
+        symbol,
+        providerAddress,
+        subscriberAddress,
+        time: bn2n(time),
+        remaining,
+      });
+      hash[subscriptionKey] = 1;
       localStorage.setItem(
         `subscription-subscribers`,
         JSON.stringify({ time, subscriptions })
       );
       setSubscriptions({ time, subscriptions });
     }
-
-    /*
-    // -------------------------------------------
-    // use stored ready events and seek if needed
-    // -------------------------------------------
-   
-    // -------------------------------------------
-    // get tokens from events
-    // and balances for active account
-    // -------------------------------------------
-    const subscriptions = [];
-    let time = bn(0);
-    for (const event of newEvents) {
-      const {
-        time: lastTime,
-        appId,
-        assetId: assetAppId,
-        providerAddress,
-        providerCount,
-        providerAmount,
-        providerLength,
-      } = SubscriptionService.Master.decodeEvent(eventName)(event);
-
-      const state = fromSome(
-        await SubscriptionService.Child.state(appId, zeroAddress),
-        {}
-      );
-      console.log("STATE");
-      console.log({ state });
-
-      const { token } = fromSome(
-        await ChildService.state({ appId: assetAppId }),
-        {}
-      );
-      const assetId = bn2n(token);
-
-      const asset = await AssetService.getAsset(assetId);
-      const {
-        params: { decimals, name, ["unit-name"]: symbol },
-      } = asset;
-      time = lastTime;
-      subscriptions.push({
-        appId,
-        assetAppId,
-        assetId,
-        providerAddress,
-        providerCount,
-        providerAmount,
-        providerLength,
-        decimals,
-        name,
-        symbol,
-      });
-    }
-    localStorage.setItem(
-      `subscriptions`,
-      JSON.stringify({ time, subscriptions })
-    );
-    setSubscriptions({ time, subscriptions });
-    */
   }, [activeAccount]);
   // -------------------------------------------
   // effect: reload tokens on account change
@@ -178,15 +161,6 @@ function SubscriptionSubscribers() {
   useEffect(() => {
     reloadSubscriptions();
   }, [activeAccount]);
-  // -------------------------------------------
-  useEffect(() => {
-    (async () => {
-      const ret = await SubscriptionService.Master.getAnnounceEvents(
-        zeroAddress
-      );
-      console.log({ ret });
-    })();
-  }, []);
   // -------------------------------------------
   return (
     <div className="AccountBalances">

@@ -196,7 +196,7 @@ export default function PrimarySearchAppBar() {
   );
 
   const mobileMenuId = "primary-search-account-menu-mobile";
-  const renderMobileMenu = null;
+  const renderMobileMenu: any = null;
   /*
     <Menu
       anchorEl={mobileMoreAnchorEl}

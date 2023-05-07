@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -11,8 +12,13 @@ const stdlib = makeStdLib();
 
 const bn2n = stdlib.bigNumberToNumber;
 
-export default function ComboBox(props) {
+interface ComboBoxProps {
+  onChange: any;
+}
+
+export default function ComboBox(props: ComboBoxProps) {
   const { activeAccount } = useWallet();
+  // TODO use events from context or hoc
   const [events, setEvents] = useState<any>(
     JSON.parse(localStorage.getItem("event-ready") ?? "{}")?.events ?? []
   );

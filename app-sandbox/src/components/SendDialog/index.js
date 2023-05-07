@@ -25,7 +25,7 @@ function SendDialog(props) {
     if (!activeAccount) return;
     if (!doSubmit) return;
     ChildService.deposit(
-      token,
+      (([, appId, , { decimals }]) => ({ appId, decimals }))(token.props.value),
       activeAccount.address,
       accountAddress,
       tokenAmount
@@ -35,7 +35,7 @@ function SendDialog(props) {
   return (
     <div className="SendDialog">
       <Dialog fullScreen={true} open={props.open} onClose={props.onClose}>
-        <DialogTitle>Send</DialogTitle>
+        {/*<DialogTitle>Send</DialogTitle>*/}
         <DialogContent
           style={{
             display: "flex",

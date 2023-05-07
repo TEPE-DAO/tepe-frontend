@@ -30,34 +30,70 @@ function SubscriptionProviders() {
     // -------------------------------------------
     // use stored ready events and seek if needed
     // -------------------------------------------
-    const eventName = "announce";
-    const storedEvents = JSON.parse(
-      localStorage.getItem(`event-${eventName}`) ?? "{}"
-    );
-    const events = !storedEvents.time
-      ? await SubscriptionService.Master.getEvents(eventName)(
-          activeAccount.address
-        )
-      : await SubscriptionService.Master.getEvents(eventName)(
-          activeAccount.address,
-          storedEvents.time
-        );
-    const newEvents = [...(storedEvents?.events ?? []), ...events];
-    localStorage.setItem(
-      `event-${eventName}`,
-      JSON.stringify({
-        time: await stdlib.getNetworkTime(),
-        events: newEvents,
-      })
-    );
-    console.log({ newEvents });
+
+    let deleteProviderEvents;
+    do {
+      const eventName = "delete";
+      const storedEvents = JSON.parse(
+        localStorage.getItem(`event-${eventName}-provider`) ?? "{}"
+      );
+      const events = !storedEvents.time
+        ? await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address
+          )
+        : await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address,
+            storedEvents.time
+          );
+      const newEvents = [...(storedEvents?.events ?? []), ...events].filter(
+        (el) => el.what[0][0] === "DeleteProvider"
+      );
+      localStorage.setItem(
+        `event-${eventName}-provider`,
+        JSON.stringify({
+          time: await stdlib.getNetworkTime(),
+          events: newEvents,
+        })
+      );
+      console.log({ newEvents });
+      deleteProviderEvents = newEvents;
+    } while (0);
+
+    let announceProviderEvents;
+    do {
+      const eventName = "announce";
+      const storedEvents = JSON.parse(
+        localStorage.getItem(`event-${eventName}`) ?? "{}"
+      );
+      const events = !storedEvents.time
+        ? await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address
+          )
+        : await SubscriptionService.Master.getEvents(eventName)(
+            activeAccount.address,
+            storedEvents.time
+          );
+      const newEvents = [...(storedEvents?.events ?? []), ...events];
+      localStorage.setItem(
+        `event-${eventName}`,
+        JSON.stringify({
+          time: await stdlib.getNetworkTime(),
+          events: newEvents,
+        })
+      );
+      announceProviderEvents = newEvents;
+    } while (0);
     // -------------------------------------------
     // get tokens from events
     // and balances for active account
     // -------------------------------------------
+    const deletedAppIds = deleteProviderEvents.map((el) =>
+      bn2n(el.what[0][1][0])
+    );
     const subscriptions = [];
     let time = bn(0);
-    for (const event of newEvents) {
+    for (const event of announceProviderEvents) {
+      const eventName = "announce";
       const {
         time: lastTime,
         appId,
@@ -67,13 +103,12 @@ function SubscriptionProviders() {
         providerAmount,
         providerLength,
       } = SubscriptionService.Master.decodeEvent(eventName)(event);
+      if (deletedAppIds.includes(appId)) continue;
 
       const state = fromSome(
         await SubscriptionService.Child.state(appId, zeroAddress),
         {}
       );
-      console.log("STATE");
-      console.log({ state });
 
       const { token } = fromSome(
         await ChildService.state({ appId: assetAppId }),
@@ -112,15 +147,6 @@ function SubscriptionProviders() {
     reloadSubscriptions();
   }, [activeAccount]);
   // -------------------------------------------
-  useEffect(() => {
-    (async () => {
-      const ret = await SubscriptionService.Master.getAnnounceEvents(
-        zeroAddress
-      );
-      console.log({ ret });
-    })();
-  }, []);
-  // -------------------------------------------
   return (
     <div className="AccountBalances">
       {(subscriptions?.subscriptions ?? []).lenght === 0 ? (
@@ -132,8 +158,6 @@ function SubscriptionProviders() {
               <TableCell>Contract ID</TableCell>
               <TableCell>Token Contract ID</TableCell>
               <TableCell>Token ID</TableCell>
-              <TableCell>Token Name</TableCell>
-              {<TableCell>Token Symbol</TableCell>}
               <TableCell>Provider Address</TableCell>
               <TableCell>Provider Count</TableCell>
               <TableCell>Provider Amount</TableCell>
@@ -147,8 +171,6 @@ function SubscriptionProviders() {
                 <TableCell>{el.appId}</TableCell>
                 <TableCell>{el.assetAppId}</TableCell>
                 <TableCell>{el.assetId}</TableCell>
-                <TableCell>{el.appId}</TableCell>
-                {<TableCell>{el.symbol}</TableCell>}
                 <TableCell>{el.providerAddress.slice(0, 4)}...</TableCell>
                 <TableCell>
                   {el.providerCount}&nbsp;time{el.providerCount > 1 && "s"}

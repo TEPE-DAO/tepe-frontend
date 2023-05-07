@@ -111,7 +111,7 @@ const getEvents = (eventName: string) => async (addr: string, time?: any) => {
 const getAnnounceEvents = getEvents("announce");
 
 // ? decode what event
-const decodeEvent = (eventName) => (event: any) => {
+const decodeEvent = (eventName: string) => (event: any) => { // TODO type me
   switch (eventName) {
     case "subscribe": {
       const { what, when } = event;
