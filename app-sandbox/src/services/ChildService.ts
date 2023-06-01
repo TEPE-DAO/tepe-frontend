@@ -13,6 +13,15 @@ const balanceOf = async (token: any, addr: string) => {
   return await balanceOf(addr);
 };
 
+const allowance = async (token: any, addr: string, addrSpender: string) => {
+  const acc = await stdlib.connectAccount({ addr });
+  const ctc = acc.contract(backend, token.appId);
+  const {
+    v: { allowance },
+  } = ctc;
+  return await allowance(addr, addrSpender);
+};
+
 const state = async (token: any) => {
   const acc = await stdlib.getDefaultAccount();
   const ctc = acc.contract(backend, token.appId);
@@ -99,5 +108,6 @@ export default {
   deposit,
   withdraw,
   balanceOf,
+  allowance,
   state,
 };

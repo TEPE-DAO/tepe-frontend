@@ -9,6 +9,7 @@ import {
 } from "@txnlab/use-wallet";
 
 import Home from "./pages/Home";
+import Sale from "./pages/Sale";
 import AppBar from "./components/AppBar.tsx";
 
 const walletProviders = initializeProviders([]);
@@ -22,7 +23,7 @@ function App() {
     <WalletProvider value={walletProviders}>
       <div className="App">
         <AppBar />
-        <Home />
+        <Sale />
       </div>
     </WalletProvider>
   );

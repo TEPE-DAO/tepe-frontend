@@ -12,6 +12,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import MailIcon from "@mui/icons-material/Mail";
 import SendIcon from "@mui/icons-material/Send";
+import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { useWallet } from "@txnlab/use-wallet";
@@ -376,6 +377,16 @@ export default function PrimarySearchAppBar() {
                   },
                 }}
               >
+                <Tooltip title="Sale">
+                  <IconButton
+                    size="large"
+                    aria-label="show 4 new mails"
+                    color="inherit"
+                    onClick={() => {}}
+                  >
+                    <PointOfSaleIcon />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Auctions">
                   <IconButton
                     size="large"
