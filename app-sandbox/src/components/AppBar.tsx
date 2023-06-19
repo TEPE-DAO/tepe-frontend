@@ -310,7 +310,7 @@ export default function PrimarySearchAppBar() {
         sx={{ top: "auto", bottom: 0 }}
       >
         <Toolbar>
-          {
+          {false && (
             <IconButton
               size="large"
               edge="start"
@@ -320,7 +320,7 @@ export default function PrimarySearchAppBar() {
             >
               <MenuIcon />
             </IconButton>
-          }
+          )}
           {/*<Typography
             variant="h6"
             noWrap
@@ -329,7 +329,7 @@ export default function PrimarySearchAppBar() {
           >
             NFT DROP
         </Typography>*/}
-          {
+          {false && (
             <Search>
               <SearchIconWrapper>
                 <SearchIcon />
@@ -339,7 +339,7 @@ export default function PrimarySearchAppBar() {
                 inputProps={{ "aria-label": "search" }}
               />
             </Search>
-          }
+          )}
           <Box sx={{ flexGrow: 1 }} />
           {!activeAccount ? (
             <Box

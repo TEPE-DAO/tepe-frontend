@@ -33,7 +33,7 @@ function AccountBalances() {
   const handleDeposit = useCallback(
     async (token) => {
       if (!activeAccount) return;
-      const amount = "1";
+      const amount = "10";
       const addr = activeAccount.address;
       await ChildService.deposit(token, addr, addr, amount);
       await reloadTokens();

@@ -9,9 +9,11 @@ const { REACT_APP_CONTRACT_INFO_MASTER } = process.env;
 const ctcInfoMaster = parseInt(REACT_APP_CONTRACT_INFO_MASTER || "0");
 */
 
-const ctcInfoMaster = 210034179;
+//const ctcInfoMaster = 210034179;
+//const ctcInfoMaster = 225729542;
+const ctcInfoMaster = 227980983;
 
-const stdlib = makeStdLib();
+const stdlib: any = makeStdLib();
 const bn2n = stdlib.bigNumberToNumber;
 const fa = stdlib.formatAddress;
 
@@ -35,7 +37,12 @@ const claim = async (
   await claim(addrTo, addrFrom, amount);
 };
 
-const subscribe = async (addr: any, appId: any, addrProvider: any) => {
+const subscribe = async (
+  addr: any,
+  appId: any,
+  addrProvider: any,
+  addrReserve: any
+) => {
   const ctc = (
     await stdlib.connectAccount({
       addr,
@@ -46,7 +53,7 @@ const subscribe = async (addr: any, appId: any, addrProvider: any) => {
       U2: { subscribe },
     },
   } = ctc;
-  await subscribe(addrProvider);
+  await subscribe(addrProvider, addrReserve);
 };
 
 export const decodeSubscription = (subscription: any) =>
@@ -60,6 +67,7 @@ export const decodeSubscription = (subscription: any) =>
 const subscription = async (
   appId: any,
   addrProvider: any,
+  addrReserve: any,
   addrSubscriber: any
 ) => {
   const ctc = (
@@ -67,10 +75,19 @@ const subscription = async (
       addr: zeroAddress,
     })
   ).contract(childBackend, appId);
+  return await ctc.v.subscription(addrProvider, addrReserve, addrSubscriber);
+};
+
+const provider = async (appId: any, addrProvider: any, addrReserve: any) => {
+  const ctc = (
+    await stdlib.connectAccount({
+      addr: zeroAddress,
+    })
+  ).contract(childBackend, appId);
   const {
-    v: { subscription: view },
+    v: { providerService: view }, // !!!
   } = ctc;
-  return await view(addrProvider, addrSubscriber);
+  return await view(addrProvider, addrReserve);
 };
 
 const state = async (appId: any, addr: any) => {
@@ -95,6 +112,7 @@ const getEvents = (eventName: string) => async (addr: string, time?: any) => {
   const {
     e: { [eventName]: evt },
   } = ctc;
+  console.log({ evt });
   const t = await stdlib.getNetworkTime();
   if (time) {
     await evt.seek(time);
@@ -111,40 +129,46 @@ const getEvents = (eventName: string) => async (addr: string, time?: any) => {
 const getAnnounceEvents = getEvents("announce");
 
 // ? decode what event
-const decodeEvent = (eventName: string) => (event: any) => { // TODO type me
+const decodeEvent = (eventName: string) => (event: any) => {
+  // TODO type me
+  const { what, when } = event;
+  console.log({ what, when });
   switch (eventName) {
-    case "subscribe": {
-      const { what, when } = event;
-      const [[ctcInfo, assetInfo, addrProvider, addrSubscriber]] = what;
+    case "Subscribe": {
+      const [ctcInfo, assetInfo, addrProvider, addrReserve, addrSubscriber] =
+        what[0][1];
       const dEvent = {
         time: bn2n(when),
         appId: bn2n(ctcInfo),
         assetId: bn2n(assetInfo),
         providerAddress: fa(addrProvider),
+        reserveAddress: fa(addrReserve),
         subscriberAddress: fa(addrSubscriber),
       };
+      console.log({ dEvent });
       return dEvent;
     }
-    case "announce": {
-      const { what, when } = event;
+    case "Announce": {
       const [
-        [
-          ctcInfo,
-          assetInfo,
-          addrProvider,
-          providerCount,
-          providerAmount,
-          providerLength,
-        ],
-      ] = what;
+        ctcInfo,
+        assetInfo,
+        addrProvider,
+        addrReserve,
+        periodCount,
+        periodAmount,
+        periodLength,
+        referenceID,
+      ] = what[0][1];
       const dEvent = {
         time: bn2n(when),
         appId: bn2n(ctcInfo),
         assetId: bn2n(assetInfo),
         providerAddress: fa(addrProvider),
-        providerCount: bn2n(providerCount),
-        providerAmount: bn2n(providerAmount),
-        providerLength: bn2n(providerLength),
+        reserveAddress: fa(addrReserve),
+        periodCount: bn2n(periodCount),
+        periodAmount: bn2n(periodAmount),
+        periodLength: bn2n(periodLength),
+        referenceID: bn2n(referenceID),
       };
       console.log({ dEvent });
       return dEvent;
@@ -155,12 +179,40 @@ const decodeEvent = (eventName: string) => (event: any) => { // TODO type me
   }
 };
 
+const announce = async (
+  appId: any,
+  addrProvider: any,
+  addrReserve: any,
+  periodCount: number,
+  periodAmount: number,
+  periodLength: number,
+  referenceID: number
+) => {
+  const { algosdk } = stdlib;
+
+  const acc = await stdlib.connectAccount({ addr: addrProvider });
+  const ctc = acc.contract(childBackend, appId);
+
+  console.log("Announcing new provider service...");
+
+  const ret = await ctc.a.U1.announce(
+    algosdk.getApplicationAddress(1),
+    periodCount,
+    periodAmount,
+    periodLength,
+    referenceID
+  );
+  console.log({ ret });
+};
+
 export default {
   Child: {
     state,
     subscribe,
     claim,
+    announce,
     subscription,
+    provider,
   },
   Master: {
     getEvents,

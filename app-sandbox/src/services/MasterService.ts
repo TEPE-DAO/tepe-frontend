@@ -1,5 +1,6 @@
 import { eventNames } from "process";
 import * as backend from "../backend/drop/index.Master.mjs";
+import * as childBackend from "../backend/drop/index.Child.mjs";
 import { makeStdLib } from "../utils/reach.js";
 
 /*
@@ -8,7 +9,6 @@ const ctcInfoMaster = parseInt(REACT_APP_CONTRACT_INFO_MASTER || "0");
 */
 
 const ctcInfoMaster = 208941015;
-
 
 const stdlib = makeStdLib();
 const bn2n = stdlib.bigNumberToNumber;
@@ -54,8 +54,30 @@ const decodeEvent = (event: any) => {
   };
 };
 
+const create = async (addr: any, token: any) => {
+  const acc = await stdlib.connectAccount({ addr });
+  const ctc = acc.contract(backend, ctcInfoMaster);
+  const ctcInfo = await ctc.a.Master.new();
+  await ctc.a.Master.setup(ctcInfo);
+  const ctcChild = acc.contract(childBackend, ctcInfo);
+  await stdlib.withDisconnect(() =>
+    ctcChild.p.Alice({
+      getParams: () => ({
+        token: token,
+        ctc: ctcInfoMaster,
+      }),
+      ready: () => {
+        console.log("Ready!");
+        stdlib.disconnect(null); // causes withDisconnect to immediately return null
+      },
+    })
+  );
+  return ctcInfo;
+};
+
 export default {
   getReadyEvents,
   getTransferEvents,
   decodeEvent,
+  create,
 };

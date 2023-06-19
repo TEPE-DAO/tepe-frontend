@@ -8,6 +8,7 @@ export const makeStdLib = () => {
   const stdlib = loadStdlib({
     REACH_CONNECTOR_MODE: networkEnv,
     //REACH_DEBUG: "1",
+    REACH_NO_WARN: "1",
   });
   const providerEnv = {
     ALGO_TOKEN: "",

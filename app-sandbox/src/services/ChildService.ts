@@ -70,6 +70,30 @@ const deposit = async (
   return deposit(addrTo, amountBn);
 };
 
+const transfer = async (
+  token: any,
+  addrFrom: string,
+  addrTo: string,
+  amount: string
+) => {
+  const acc = await stdlib.connectAccount({ addr: addrFrom });
+  const [lhs, rhs, rst] = amount.split(".");
+  if (rst) throw Error("Invalid amount");
+  const lhsBn = bn(parseInt(lhs)).mul(bn(10).pow(bn(token.decimals)));
+  const rhsBn =
+    token.decimals > 0
+      ? bn((rhs ?? "0").slice(0, token.decimals).padEnd(token.decimals, "0"))
+      : bn(0);
+  const amountBn = token.decimals > 0 ? lhsBn.add(rhsBn) : lhsBn;
+  const ctc = acc.contract(backend, token.appId);
+  const {
+    a: {
+      U1: { transfer },
+    },
+  } = ctc;
+  return transfer(addrTo, amountBn);
+}
+
 const withdraw = async (
   token: any,
   addrFrom: string,
@@ -97,6 +121,7 @@ const withdraw = async (
 export default {
   approve,
   deposit,
+  transfer,
   withdraw,
   balanceOf,
   state,
