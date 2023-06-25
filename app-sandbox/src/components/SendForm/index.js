@@ -31,17 +31,7 @@ function SendForm({ setToken, setTokenAmount, setAccountAddress }) {
           onTokenChange={onTokenChange}
         />
         <TextInputBase onChange={onAccountAddressChange} label="Destination" />
-        {/*<TokenBox onChange={onTokenChange} />
-        <TextField
-          label="Token Amount"
-          sx={{ width: 300 }}
-          onChange={onTokenAmountChange}
-        <TextField
-          label="Account Address"
-          sx={{ width: 300 }}
-          onChange={onAccountAddressChange}
-        />
-  >*/}
+        <TokenBox onChange={onTokenChange} />
       </Stack>
     </div>
   );

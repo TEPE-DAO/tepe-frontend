@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import SendForm from "../SendForm";
 import ChildService from "../../services/ChildService.ts";
+import ARC200Service from "../../services/ARC200Service.ts";
 function SendDialog(props) {
   const { providers, activeAccount } = useWallet();
   const [token, setToken] = useState({});
@@ -24,14 +25,11 @@ function SendDialog(props) {
   useEffect(() => {
     if (!activeAccount) return;
     if (!doSubmit) return;
-    ChildService.deposit(
-      (([, appId, , { decimals }]) => ({ appId, decimals }))(token.props.value),
-      activeAccount.address,
-      accountAddress,
-      tokenAmount
-    );
+    console.log({ token, tokenAmount, accountAddress });
+    ARC200Service.transfer(token, activeAccount.address, accountAddress, tokenAmount);
     setDoSubmit(false);
   }, [activeAccount, doSubmit]);
+  console.log({ token, tokenAmount, accountAddress });
   return (
     <div className="SendDialog">
       <Dialog fullScreen={true} open={props.open} onClose={props.onClose}>

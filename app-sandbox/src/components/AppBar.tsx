@@ -376,26 +376,30 @@ export default function PrimarySearchAppBar() {
                   },
                 }}
               >
-                <Tooltip title="Auctions">
-                  <IconButton
-                    size="large"
-                    aria-label="show 4 new mails"
-                    color="inherit"
-                    onClick={() => {}}
-                  >
-                    <GavelIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Subscriptions">
-                  <IconButton
-                    size="large"
-                    aria-label="show 4 new mails"
-                    color="inherit"
-                    onClick={handleSubscriptionMenuOpen}
-                  >
-                    <CurrencyExchangeIcon />
-                  </IconButton>
-                </Tooltip>
+                {false && (
+                  <Tooltip title="Auctions">
+                    <IconButton
+                      size="large"
+                      aria-label="show 4 new mails"
+                      color="inherit"
+                      onClick={() => {}}
+                    >
+                      <GavelIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {false && (
+                  <Tooltip title="Subscriptions">
+                    <IconButton
+                      size="large"
+                      aria-label="show 4 new mails"
+                      color="inherit"
+                      onClick={handleSubscriptionMenuOpen}
+                    >
+                      <CurrencyExchangeIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
                 <IconButton
                   size="large"
                   aria-label="show 4 new mails"
@@ -404,19 +408,21 @@ export default function PrimarySearchAppBar() {
                 >
                   <SendIcon />
                 </IconButton>
-                <IconButton
-                  size="large"
-                  aria-label="show 4 new mails"
-                  color="inherit"
-                  onClick={handleMailMenuOpen}
-                >
-                  <Badge
-                    badgeContent={mail.filter((el: any) => el.new).length} // TODO: type
-                    color="error"
+                {false && (
+                  <IconButton
+                    size="large"
+                    aria-label="show 4 new mails"
+                    color="inherit"
+                    onClick={handleMailMenuOpen}
                   >
-                    <MailIcon />
-                  </Badge>
-                </IconButton>
+                    <Badge
+                      badgeContent={mail.filter((el: any) => el.new).length} // TODO: type
+                      color="error"
+                    >
+                      <MailIcon />
+                    </Badge>
+                  </IconButton>
+                )}
                 <IconButton
                   size="large"
                   aria-label="show 4 new mails"

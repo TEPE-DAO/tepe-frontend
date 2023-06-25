@@ -27,7 +27,8 @@ import Blink from "react-blink-text";
 import ARC200Service from "../../services/ARC200Service";
 import SendIcon from "@mui/icons-material/Send";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
 
 const stdlib = makeStdLib();
 const pc = stdlib.parseCurrency;
@@ -44,42 +45,7 @@ const exclude = [227793889, 227800537, 227802852];
 const title = "ARC200";
 const version = ""; // V1
 
-const Connect = (props) => {
-  const { activeAccount } = useWallet();
-  return (
-    <div className="Home">
-      <Stack direction="column" gap={1}>
-        <Stack direction="row" style={{ alignItems: "baseline" }}>
-          <Typography variant="h1">{title}</Typography>
-          <small>{version}</small>
-        </Stack>
-        <Stack direction="column" gap={5} style={{ textAlign: "center" }}>
-          <code style={{ display: "inline-block", textAlign: "left" }}>
-            {props.name && `Name: ${props.name}`}
-            <br />
-            {props.symbol && `Symbol: ${props.symbol}`}
-            <br />
-            {props.decimals && `Decimals: ${props.decimals}`}
-            <br />
-            {props.totalSupply && `Total Supply: ${props.totalSupply}`}
-            <br />
-          </code>
-          <Blink
-            color="grey"
-            blinkTime={3}
-            text="Connect wallet to continue"
-            fontSize="20"
-          >
-            Connect wallet to continue
-          </Blink>
-        </Stack>
-      </Stack>
-    </div>
-  );
-};
-
 const User = (props) => {
-  const navigate = useNavigate();
   return (
     <div className="Home">
       <Stack>
@@ -98,27 +64,21 @@ const User = (props) => {
             {props.totalSupply && `Total Supply: ${props.totalSupply}`}
             <br />
           </code>
+          {props.holder && (
+            <span style={{ overflow: "hidden" }}>Holder: {props.holder}</span>
+          )}
           {props.balance &&
             props.symbol &&
             `Balance: ${props.balance} ${props.symbol}`}
-          <Stack direction="row" gap="1em" style={{ alignItems: "center" }}>
-            <SendIcon />
-            <Typography variant="h6">Send</Typography>
-          </Stack>
-          <Stack direction="row" gap="1em" style={{ alignItems: "center" }}>
-            <AccountBalanceWalletIcon />
-            <Typography variant="h6">Balance</Typography>
-          </Stack>
-          <Typography variant="h6" onClick={() => {
-            navigate("/address/QLLLYBITHLFUX3BWLPAXD23SBMLUYHGCG6NOPOBWY7KQHBLHLC3JC7LVBA");
-          }}>Address Page</Typography>
         </Stack>
       </Stack>
     </div>
   );
 };
 
-function Home() {
+function Address() {
+  const { id } = useParams();
+  console.log(id);
   const { activeAccount } = useWallet();
   const [token, setToken] = React.useState(null);
   React.useEffect(() => {
@@ -132,15 +92,16 @@ function Home() {
       const balance = stdlib.formatWithDecimals(
         await ARC200Service.balanceOf(
           "6X7XJO6FX3SHUK2OUL46QBQDSNO67RAFK6O73KJD4IVOMTSOIYANOIVWNU",
-          activeAccount?.address ?? zeroAddress
+          id
         ),
         parseInt(tokenMetadata.decimals)
       );
-      const token = { ...tokenMetadata, balance };
+      const token = { ...tokenMetadata, balance, holder: id };
       setToken(token);
     })();
   }, [activeAccount]);
-  return activeAccount ? <User {...token} /> : <Connect {...token} />;
+  console.log({ token });
+  return <User {...token} />;
 }
 
-export default Home;
+export default Address;

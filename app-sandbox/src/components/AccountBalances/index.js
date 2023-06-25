@@ -17,6 +17,7 @@ import TokenBox from "../TokenBox";
 import ChildService from "../../services/ChildService.ts";
 import MasterService from "../../services/MasterService.ts";
 import AssetService from "../../services/AssetService.ts";
+import ARC200Service from "../../services/ARC200Service.ts";
 import { makeStdLib } from "../../utils/reach";
 import { fromSome } from "../../utils/common";
 import SendIcon from "@mui/icons-material/Send";
@@ -25,6 +26,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 const stdlib = makeStdLib();
 const bn = stdlib.bigNumberify;
 const bn2n = stdlib.bigNumberToNumber;
+const fa = stdlib.formatAddress;
 function AccountBalances() {
   const { activeAccount } = useWallet();
   const [tokens, setTokens] = useState(
@@ -62,18 +64,17 @@ function AccountBalances() {
     // -------------------------------------------
     // use stored ready events and seek if needed
     // -------------------------------------------
-    const storedEvents = JSON.parse(
-      localStorage.getItem("event-ready") ?? "{}"
-    );
+    const eventKey = "event-mint";
+    const storedEvents = JSON.parse(localStorage.getItem(eventKey) ?? "{}");
     const events = !storedEvents.time
-      ? await MasterService.getReadyEvents(activeAccount.address)
-      : await MasterService.getReadyEvents(
+      ? await ARC200Service.getMintEvents(activeAccount.address)
+      : await ARC200Service.getMintEvents(
           activeAccount.address,
           storedEvents.time
         );
     const newEvents = [...(storedEvents?.events ?? []), ...events];
     localStorage.setItem(
-      "event-ready",
+      eventKey,
       JSON.stringify({
         time: await stdlib.getNetworkTime(),
         events: newEvents,
@@ -87,22 +88,21 @@ function AccountBalances() {
     let time = bn(0);
     for (const event of newEvents) {
       const {
-        what: [[ctcInfoBn, assetInfoBn]],
+        what: [tokenIdHexAddress],
         when,
       } = event;
-      const appId = bn2n(ctcInfoBn);
-      const assetId = bn2n(assetInfoBn);
-      const asset = await AssetService.getAsset(assetId);
-      const {
-        params: { decimals, name, ["unit-name"]: symbol },
-      } = asset;
-      const amountBn = fromSome(
-        await ChildService.balanceOf({ appId }, activeAccount.address),
-        bn(0)
+      const tokenId = fa(tokenIdHexAddress);
+      const tokenMetadata = await ARC200Service.getTokenMetadata(
+        activeAccount.address,
+        tokenId
       );
-      const amount = stdlib.formatWithDecimals(amountBn, decimals);
-      time = bn2n(when);
-      tokens.push({ appId, assetId, decimals, name, symbol, amount });
+      //const amount = 1;
+      const amount = stdlib.formatWithDecimals(
+        await ARC200Service.balanceOf(tokenId, activeAccount.address),
+        parseInt(tokenMetadata.decimals)
+      );
+      console.log({ amount });
+      tokens.push({ id: tokenId, amount, ...tokenMetadata });
     }
     localStorage.setItem(`tokens`, JSON.stringify({ time, tokens }));
     setTokens({ time, tokens });
@@ -119,63 +119,65 @@ function AccountBalances() {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Token Asset ID</TableCell>
-            <TableCell>Token Contract ID</TableCell>
+            <TableCell>Token ID</TableCell>
             <TableCell>Token Name</TableCell>
             {<TableCell>Token Symbol</TableCell>}
-            {/*<TableCell>Token Decimals</TableCell>*/}
+            {<TableCell>Token Decimals</TableCell>}
             <TableCell>Balance</TableCell>
-            <TableCell>Action</TableCell>
+            {false && <TableCell>Action</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
           {tokens?.tokens?.map((token) => (
             <TableRow key={token.appId}>
-              <TableCell>{token.assetId}</TableCell>
-              <TableCell>{token.appId}</TableCell>
+              <TableCell>
+                {token.id.slice(0, 4)}...{token.id.slice(-4)}
+              </TableCell>
               <TableCell>{token.name}</TableCell>
               {<TableCell>{token.symbol}</TableCell>}
-              {/*<TableCell>{token.decimals}</TableCell>*/}
+              {<TableCell>{token.decimals}</TableCell>}
               <TableCell>
                 {token.amount}&nbsp;{token.symbol}
               </TableCell>
-              <TableCell>
-                <ButtonGroup>
-                  {[
-                    {
-                      label: "D",
-                      desciption: "Deposit",
-                      icon: <AddIcon />,
-                      onClick: async () => {
-                        handleDeposit(token);
+              {false && (
+                <TableCell>
+                  <ButtonGroup>
+                    {[
+                      {
+                        label: "D",
+                        desciption: "Deposit",
+                        icon: <AddIcon />,
+                        onClick: async () => {
+                          handleDeposit(token);
+                        },
                       },
-                    },
-                    {
-                      label: "W",
-                      desciption: "Withdraw",
-                      icon: <RemoveIcon />,
-                      onClick: async () => {
-                        handleWithdraw(token);
+                      {
+                        label: "W",
+                        desciption: "Withdraw",
+                        icon: <RemoveIcon />,
+                        onClick: async () => {
+                          handleWithdraw(token);
+                        },
                       },
-                    },
-                    {
-                      label: "S",
-                      desciption: "Send",
-                      icon: <SendIcon />,
-                    },
-                  ].map((el) => (
-                    <Tooltip
-                      key={el.label}
-                      placement="top"
-                      title={el.desciption}
-                    >
-                      <Button onClick={el.onClick}>
-                        {el.icon || el.label}
-                      </Button>
-                    </Tooltip>
-                  ))}
-                </ButtonGroup>
-              </TableCell>
+                      {
+                        label: "S",
+                        desciption: "Send",
+                        icon: <SendIcon />,
+                      },
+                    ].map((el) => (
+                      <Tooltip
+                        key={el.label}
+                        placement="top"
+                        title={el.desciption}
+                      >
+                        <Button onClick={el.onClick}>
+                          {el.icon || el.label}
+                        </Button>
+                      </Tooltip>
+                    ))}
+                  </ButtonGroup>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
