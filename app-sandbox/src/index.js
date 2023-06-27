@@ -1,11 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import Address from "./pages/Address";
 import reportWebVitals from "./reportWebVitals";
 
+/*
 const router = createBrowserRouter([
   {
     path: "/",
@@ -24,11 +25,19 @@ const router = createBrowserRouter([
     element: <div>Not found</div>,
   }
 ]);
+*/
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/token/:id" element={<div>Asset page</div>} />
+        <Route path="/address/:id" element={<Address />} />
+        <Route path="/*" element={<div>Not found</div>} />
+      </Routes>
+    </HashRouter>
   </React.StrictMode>
 );
 
