@@ -35,6 +35,7 @@ import SendDialog from "./SendDialog/index.js";
 import SubscriptionDialog from "./SubscriptionDialog/index.js";
 import { zeroAddress } from "../utils/algorand.js";
 import { makeStdLib } from "../utils/reach.js";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -80,6 +81,7 @@ const stdlib = makeStdLib();
 
 export default function PrimarySearchAppBar() {
   const { providers, activeAccount } = useWallet();
+  console.log({ providers, activeAccount });
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mailAnchorEl, setMailAnchorEl] =
     React.useState<null | HTMLElement>(null);
@@ -138,6 +140,7 @@ export default function PrimarySearchAppBar() {
 
   const menuId = "primary-search-account-menu";
 
+  /*
   const renderMailMenu = (
     <Menu
       anchorEl={mailAnchorEl}
@@ -167,6 +170,7 @@ export default function PrimarySearchAppBar() {
       ))}
     </Menu>
   );
+  */
 
   const renderMenu = (
     <Menu
@@ -186,7 +190,11 @@ export default function PrimarySearchAppBar() {
     >
       <MenuItem
         onClick={() => {
-          providers?.[0].disconnect();
+          activeAccount &&
+            providers &&
+            providers
+              .find((p) => p.metadata.id === activeAccount?.providerId)
+              .disconnect();
           handleMenuClose();
         }}
       >
@@ -197,6 +205,7 @@ export default function PrimarySearchAppBar() {
 
   const mobileMenuId = "primary-search-account-menu-mobile";
   const renderMobileMenu: any = null;
+
   /*
     <Menu
       anchorEl={mobileMoreAnchorEl}
@@ -342,28 +351,32 @@ export default function PrimarySearchAppBar() {
           )}
           <Box sx={{ flexGrow: 1 }} />
           {!activeAccount ? (
-            <Box
-              sx={{
-                display: {
-                  xs: "flex",
-                  alignItems: "center",
-                  gap: "1em",
-                },
-              }}
-            >
-              <Button
-                variant="text"
-                style={{ color: "white" }}
-                onClick={() => {
-                  providers?.[0].connect();
+            providers?.map((provider) => (
+              <Box
+                sx={{
+                  display: {
+                    xs: "flex",
+                    alignItems: "center",
+                    gap: "1em",
+                  },
                 }}
               >
-                <img
-                  style={{ height: "30px", filter: "grayscale(1)" }}
-                  src={providers?.[0]?.metadata?.icon}
-                />
-              </Button>
-            </Box>
+                <Button
+                  variant="text"
+                  style={{ color: "white" }}
+                  onClick={() => {
+                    provider.connect().then(() => {
+                      window.location.reload();
+                    });
+                  }}
+                >
+                  <img
+                    style={{ height: "30px", filter: "grayscale(1)" }}
+                    src={provider.metadata.icon}
+                  />
+                </Button>
+              </Box>
+            ))
           ) : (
             <>
               <Box
@@ -376,8 +389,7 @@ export default function PrimarySearchAppBar() {
                   },
                 }}
               >
-                {false && (
-                  <Tooltip title="Auctions">
+                {/*<Tooltip title="Auctions">
                     <IconButton
                       size="large"
                       aria-label="show 4 new mails"
@@ -387,9 +399,8 @@ export default function PrimarySearchAppBar() {
                       <GavelIcon />
                     </IconButton>
                   </Tooltip>
-                )}
-                {false && (
-                  <Tooltip title="Subscriptions">
+              )*/}
+                {/*<Tooltip title="Subscriptions">
                     <IconButton
                       size="large"
                       aria-label="show 4 new mails"
@@ -399,16 +410,16 @@ export default function PrimarySearchAppBar() {
                       <CurrencyExchangeIcon />
                     </IconButton>
                   </Tooltip>
-                )}
-                <IconButton
+                )*/}
+                {/*<IconButton
                   size="large"
                   aria-label="show 4 new mails"
                   color="inherit"
                   onClick={handleSendMenuOpen}
                 >
                   <SendIcon />
-                </IconButton>
-                {false && (
+                </IconButton>*/}
+                {/*
                   <IconButton
                     size="large"
                     aria-label="show 4 new mails"
@@ -422,15 +433,15 @@ export default function PrimarySearchAppBar() {
                       <MailIcon />
                     </Badge>
                   </IconButton>
-                )}
-                <IconButton
+              )*/}
+                {/*<IconButton
                   size="large"
                   aria-label="show 4 new mails"
                   color="inherit"
                   onClick={handleAccountBalanceMenuOpen}
                 >
                   <AccountBalanceWalletIcon />
-                </IconButton>
+                </IconButton>*/}
                 {/*<IconButton
                   size="large"
                   aria-label="show 17 new notifications"
@@ -440,20 +451,41 @@ export default function PrimarySearchAppBar() {
                     <NotificationsIcon />
                   </Badge>
               </IconButton>*/}
-                <IconButton
-                  size="large"
-                  edge="end"
-                  aria-label="account of current user"
-                  aria-controls={menuId}
-                  aria-haspopup="true"
-                  onClick={handleProfileMenuOpen}
-                  color="inherit"
-                >
-                  <img
-                    style={{ height: "30px" }}
-                    src={providers?.[0]?.metadata?.icon}
-                  />
-                </IconButton>
+                {activeAccount.address.slice(0, 4)}...
+                {activeAccount.address.slice(-4)}
+                <ContentCopyIcon
+                  onClick={() => {
+                    alert("Copy address to clipboard. Not yet implmented"); // TODO implement copy address
+                  }}
+                />
+                {providers &&
+                  activeAccount &&
+                  providers.map(
+                    (provider) =>
+                      provider.metadata.id === activeAccount.providerId && (
+                        <IconButton
+                          size="large"
+                          edge="end"
+                          aria-label="account of current user"
+                          aria-controls={menuId}
+                          aria-haspopup="true"
+                          onClick={handleProfileMenuOpen}
+                          color="inherit"
+                        >
+                          <img
+                            style={{
+                              height: "30px",
+                              filter:
+                                provider.metadata.id ===
+                                activeAccount.providerId
+                                  ? ""
+                                  : "grayscale(1)",
+                            }}
+                            src={provider.metadata.icon}
+                          />
+                        </IconButton>
+                      )
+                  )}
               </Box>
               {/*<Box sx={{ display: { xs: "flex", md: "none" } }}>
                 <IconButton
@@ -471,16 +503,16 @@ export default function PrimarySearchAppBar() {
           )}
         </Toolbar>
       </AppBar>
-      {renderMobileMenu}
-      {renderMailMenu}
+      {/*renderMobileMenu*/}
+      {/*renderMailMenu*/}
       {renderMenu}
-      <SendDialog open={sendFormOpen} setOpen={setSendFormOpen} />
-      <SubscriptionDialog
+      {/*<SendDialog open={sendFormOpen} setOpen={setSendFormOpen} />*/}
+      {/*<SubscriptionDialog
         open={subscriptionFormOpen}
         setOpen={setSubscriptionFormOpen}
-      />
+          />*/}
       {/* TODO move this into component like SendDialog */}
-      <Dialog
+      {/*<Dialog
         fullScreen={true}
         open={accountBalanceOpen}
         onClose={() => setAccountBalanceOpen(false)}
@@ -492,7 +524,7 @@ export default function PrimarySearchAppBar() {
         <DialogActions>
           <Button onClick={() => setAccountBalanceOpen(false)}>Close</Button>
         </DialogActions>
-      </Dialog>
+          </Dialog>*/}
     </Box>
   );
 }

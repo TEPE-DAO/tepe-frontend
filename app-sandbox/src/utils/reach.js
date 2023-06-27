@@ -1,8 +1,15 @@
 import { ALGO_MakeWalletConnect, loadStdlib } from "@reach-sh/stdlib";
+
 import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "algorand-walletconnect-qrcode-modal";
 
+import MyAlgoConnect from "@randlabs/myalgo-connect";
+
+import { ALGO_MakePeraConnect as MakePeraConnect } from "@reach-sh/stdlib";
+import { PeraWalletConnect } from "@perawallet/connect";
+
 export const makeStdLib = () => {
+  const wallet = JSON.parse(localStorage.getItem("txnlab-use-wallet") || "{}");
   const networkEnv = "ALGO-live";
   const networkProvider = "testnet";
   const stdlib = loadStdlib({
@@ -20,12 +27,30 @@ export const makeStdLib = () => {
     ALGO_INDEXER_SERVER: `https://${networkProvider}-idx.algonode.cloud`,
     ALGO_INDEXER_PORT: "",
   };
-  stdlib.setWalletFallback(
-    stdlib.walletFallback({
-      providerEnv,
-      WalletConnect: ALGO_MakeWalletConnect(WalletConnect, QRCodeModal),
-    })
-  );
-
+  switch (wallet?.state?.activeAccount?.providerId) {
+    case "pera":
+      stdlib.setWalletFallback(
+        stdlib.walletFallback({
+          providerEnv,
+          WalletConnect: MakePeraConnect(PeraWalletConnect),
+        })
+      );
+      break;
+    case "myalgo":
+      stdlib.setWalletFallback(
+        stdlib.walletFallback({
+          providerEnv,
+          MyAlgoConnect,
+        })
+      );
+      break;
+    default:
+      stdlib.setWalletFallback(
+        stdlib.walletFallback({
+          providerEnv,
+          WalletConnect: ALGO_MakeWalletConnect(WalletConnect, QRCodeModal),
+        })
+      );
+  }
   return stdlib;
 };

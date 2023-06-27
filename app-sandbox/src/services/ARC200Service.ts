@@ -1,9 +1,11 @@
 import * as backend from "../backend/arc200/index.ARC200.mjs";
+import { zeroAddress } from "../utils/algorand.js";
 import { fromSome } from "../utils/common.js";
 import { makeStdLib } from "../utils/reach.js";
 
 const stdlib = makeStdLib();
 const bn = stdlib.bigNumberify;
+const bn2n = stdlib.bigNumberToNumber;
 const bn2bi = stdlib.bigNumberToBigInt;
 
 const ctcInfo = 249072786;
@@ -35,10 +37,10 @@ const getMintEvents = getEvents("Mint");
 const getTransferEvents = getEvents("Transfer");
 const getApproveEvents = getEvents("Approve");
 
-const getTokenMetadata = async (addr: string, tokenId: string) => {
+const getTokenMetadata = async (ctcInfo: number) => {
   const { v } = (
     await stdlib.connectAccount({
-      addr,
+      addr: zeroAddress,
     })
   ).contract(backend, ctcInfo);
   const prepareString = (str: string) => {
@@ -47,20 +49,19 @@ const getTokenMetadata = async (addr: string, tokenId: string) => {
       return str.slice(0, str.indexOf("\x00"));
     }
   };
-  const name = prepareString(fromSome(await v.name(tokenId), ""));
-  const symbol = prepareString(fromSome(await v.symbol(tokenId), ""));
-  const decimals = bn2bi(fromSome(await v.decimals(tokenId), bn(0))).toString();
-  const totalSupply = bn2bi(
-    fromSome(await v.totalSupply(tokenId), bn(0))
-  ).toString();
+  // TODO use state
+  const name = prepareString(fromSome(await v.name(), ""));
+  const symbol = prepareString(fromSome(await v.symbol(), ""));
+  const decimals = bn2n(fromSome(await v.decimals(), bn(0)));
+  const totalSupply = bn2bi(fromSome(await v.totalSupply(), bn(0))).toString();
   const metadata = { name, symbol, decimals, totalSupply };
   return metadata;
 };
 
-const balanceOf = async (tokenId: string, addr: string) => {
-  const acc = await stdlib.connectAccount({ addr });
+const balanceOf = async (ctcInfo: number, addr: string) => {
+  const acc = await stdlib.connectAccount({ addr: zeroAddress });
   const ctc = acc.contract(backend, ctcInfo);
-  return fromSome(await ctc.v.balanceOf(tokenId, addr), bn(0));
+  return fromSome(await ctc.v.balanceOf(addr), bn(0));
 };
 
 // code below from ChildService.ts
@@ -128,7 +129,6 @@ const transfer = async (
   addrTo: string,
   amount: string
 ) => {
-  console.log("here");
   console.log({ token, addrFrom, addrTo, amount });
   const acc = await stdlib.connectAccount({ addr: addrFrom });
   const [lhs, rhs, rst] = amount.split(".");
@@ -144,11 +144,11 @@ const transfer = async (
       : bn(0);
   const amountBn = token.decimals > 0 ? lhsBn.add(rhsBn) : lhsBn;
   console.log({ amountBn });
-  const ctc = acc.contract(backend, ctcInfo);
+  const ctc = acc.contract(backend, token.appId);
   const {
     a: { transfer },
   } = ctc;
-  return transfer(token.tokenId, addrTo, amountBn);
+  return transfer(addrTo, amountBn);
 };
 
 const withdraw = async (

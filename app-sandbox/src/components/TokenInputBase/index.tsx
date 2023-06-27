@@ -47,22 +47,29 @@ export default function CustomizedInputBase({
   // -------------------------------------------
   // TODO use events from context or hoc
   const { activeAccount } = useWallet();
+  /*
   const [events, setEvents] = useState<any>( // TODO type me
     JSON.parse(localStorage.getItem("event-ready") ?? "{}")?.events ?? []
   );
-  const tokenARC200 = [
-    30819192,
-    ARC200Service.getCTCInfo(),
-    "6X7XJO6FX3SHUK2OUL46QBQDSNO67RAFK6O73KJD4IVOMTSOIYANOIVWNU",
-    {
-      name: "ARC200 Token",
-      symbol: "ARC200",
-      decimals: "8",
-      totalSupply: "1000000000000000000",
-    },
-  ];
-  const [options, setOptions] = useState<any>([tokenARC200]); // TODO type me
+  */
+  const tokens = JSON.parse(localStorage.getItem("tokens") || "[249906631]");
+  const [options, setOptions] = useState<any>(null); // TODO type me
   const [option, setOption] = useState<any>("");
+  // EFFECT: get token options
+  useEffect(() => {
+    if (options) return;
+    (async () => {
+      const options: any = [];
+      for (const ctcInfo of tokens) {
+        const metadata = await ARC200Service.getTokenMetadata(ctcInfo);
+        const option = { appId: ctcInfo, ...metadata };
+        options.push(option);
+      }
+      setOptions(options);
+    })();
+  }, []);
+  console.log({ options });
+  /*
   useEffect(() => {
     (async () => {
       // -------------------------------------------
@@ -101,11 +108,9 @@ export default function CustomizedInputBase({
       for (const e of events) {
         const { what, when } = e;
         const [tokenIdHexAddr] = what;
-        const tokenId = stdlib.formatAddress(tokenIdHexAddr);
-        const metadata = await ARC200Service.getTokenMetadata(
-          zeroAddress,
-          tokenId
-        );
+        const tokenId = stdlib.formatAddress(tokenIdHexAddr); 
+        const ctcInfo = 249906631; // TODO get from event
+        const metadata = await ARC200Service.getTokenMetadata(ctcInfo);
         const time = bn2n(when);
         const option = [time, undefined, tokenId, metadata];
         options.push(option);
@@ -128,6 +133,7 @@ export default function CustomizedInputBase({
     setOption(v1TokenOption);
     onTokenChange(null, v1TokenOption);
   }, [onTokenChange, options]);
+  */
   return (
     <>
       <InputLabel>Send</InputLabel>
@@ -143,11 +149,10 @@ export default function CustomizedInputBase({
             sx={{ border: 0 }}
             id="token-select"
             onChange={onTokenChange}
-            value={options ? options[0] : ""}
           >
             {options?.map((option: any) => (
-              <MenuItem key={option[2]} value={option}>
-                {option[3].symbol}
+              <MenuItem key={option.appId} value={option}>
+                {option.symbol}
               </MenuItem>
             ))}
           </Select>

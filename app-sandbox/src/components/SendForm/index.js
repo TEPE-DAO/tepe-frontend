@@ -1,18 +1,13 @@
-import {
-  FormControlLabel,
-  InputBase,
-  Paper,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { Stack } from "@mui/material";
 import TokenBox from "../../components/TokenBox";
 import TokenInputBase from "../../components/TokenInputBase/index.tsx";
 import TextInputBase from "../../components/TextInputBase/index.tsx";
 import { useCallback } from "react";
-import { Label } from "@mui/icons-material";
 function SendForm({ setToken, setTokenAmount, setAccountAddress }) {
   const onTokenChange = useCallback(
-    (_, newValue) => setToken(newValue ?? 0),
+    (e, newValue) => {
+      setToken(newValue?.props?.value ?? {}); // HACK
+    },
     [setToken]
   );
   const onTokenAmountChange = useCallback(

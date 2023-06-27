@@ -17,8 +17,11 @@ function SendDialog(props) {
   const [accountAddress, setAccountAddress] = useState("");
   const [doSubmit, setDoSubmit] = useState(false);
   const handleSubmit = async () => {
+    console.log({ activeAccount });
     if (!activeAccount) {
-      providers[0].connect();
+      providers
+        .filter((el) => el.metadata.id === activeAccount.providerId)[0]
+        .connect();
     }
     setDoSubmit(true);
   };
@@ -26,10 +29,24 @@ function SendDialog(props) {
     if (!activeAccount) return;
     if (!doSubmit) return;
     console.log({ token, tokenAmount, accountAddress });
-    ARC200Service.transfer(token, activeAccount.address, accountAddress, tokenAmount);
-    setDoSubmit(false);
+    (async () => {
+      const res = await ARC200Service.transfer(
+        token,
+        activeAccount.address,
+        accountAddress,
+        tokenAmount
+      );
+      if (res) {
+        alert(
+          `Successfully transferred ${tokenAmount} ${token.symbol} to ${accountAddress}`
+        );
+      } else {
+        alert("Transfer failed");
+      }
+      // TODO catch others
+      setDoSubmit(false);
+    })();
   }, [activeAccount, doSubmit]);
-  console.log({ token, tokenAmount, accountAddress });
   return (
     <div className="SendDialog">
       <Dialog fullScreen={true} open={props.open} onClose={props.onClose}>
