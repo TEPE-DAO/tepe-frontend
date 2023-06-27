@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWallet } from "@txnlab/use-wallet";
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
 } from "@mui/material";
 import SendForm from "../SendForm";
-import ChildService from "../../services/ChildService.ts";
 import ARC200Service from "../../services/ARC200Service.ts";
 function SendDialog(props) {
   const { providers, activeAccount } = useWallet();
@@ -50,7 +48,6 @@ function SendDialog(props) {
   return (
     <div className="SendDialog">
       <Dialog fullScreen={true} open={props.open} onClose={props.onClose}>
-        {/*<DialogTitle>Send</DialogTitle>*/}
         <DialogContent
           style={{
             display: "flex",

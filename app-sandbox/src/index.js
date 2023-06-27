@@ -6,27 +6,6 @@ import App from "./App";
 import Address from "./pages/Address";
 import reportWebVitals from "./reportWebVitals";
 
-/*
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />,
-  },
-  {
-    path: "/token/:id",
-    element: <div>Asset page</div>,
-  },
-  {
-    path: "/address/:id",
-    element: <Address />,
-  },
-  {
-    path: "/*",
-    element: <div>Not found</div>,
-  }
-]);
-*/
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>

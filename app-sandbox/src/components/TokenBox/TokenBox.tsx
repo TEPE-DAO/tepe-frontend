@@ -12,11 +12,11 @@ const stdlib = makeStdLib();
 
 const bn2n = stdlib.bigNumberToNumber;
 
-interface ComboBoxProps {
+interface TokenBoxProps {
   onChange: any;
 }
 
-export default function ComboBox(props: ComboBoxProps) {
+export default function TokenBox(props: TokenBoxProps) {
   const { activeAccount } = useWallet();
   // TODO use events from context or hoc
   const [events, setEvents] = useState<any>(
