@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { useWallet } from "@txnlab/use-wallet";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import SendForm from "../SendForm";
 import ARC200Service from "../../services/ARC200Service.ts";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+
+import { toast } from "react-toastify";
+
 function SendDialog(props) {
   const { providers, activeAccount } = useWallet();
   const [token, setToken] = useState({});
   const [tokenAmount, setTokenAmount] = useState("");
   const [accountAddress, setAccountAddress] = useState("");
   const [doSubmit, setDoSubmit] = useState(false);
+  const [pending, setPending] = useState(false);
   const handleSubmit = async () => {
     console.log({ activeAccount });
     if (!activeAccount) {
@@ -28,21 +30,33 @@ function SendDialog(props) {
     if (!doSubmit) return;
     console.log({ token, tokenAmount, accountAddress });
     (async () => {
-      const res = await ARC200Service.transfer(
-        token,
-        activeAccount.address,
-        accountAddress,
-        tokenAmount
-      );
-      if (res) {
-        alert(
-          `Successfully transferred ${tokenAmount} ${token.symbol} to ${accountAddress}`
+      try {
+        setPending(true);
+        const res = await ARC200Service.transfer(
+          token,
+          activeAccount.address,
+          accountAddress,
+          tokenAmount
         );
-      } else {
-        alert("Transfer failed");
+        if (res) {
+          toast(
+            <div>
+              Transfer successful!
+              <br />
+              {tokenAmount} {token.symbol} sent to {accountAddress.slice(0, 4)}
+              ...{accountAddress.slice(-4)}
+            </div>
+          );
+        } else {
+          alert("Transfer failed");
+        }
+        // TODO catch others
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setPending(false);
+        setDoSubmit(false);
       }
-      // TODO catch others
-      setDoSubmit(false);
     })();
   }, [activeAccount, doSubmit]);
   return (
@@ -55,16 +69,33 @@ function SendDialog(props) {
             justifyContent: "center",
           }}
         >
-          <SendForm
-            setToken={setToken}
-            setTokenAmount={setTokenAmount}
-            setAccountAddress={setAccountAddress}
-          />
+          {pending ? (
+            <Stack
+              gap={5}
+              direction="column"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <CircularProgress size={100} />
+              <Typography variant="h6">Transaction pending...</Typography>
+            </Stack>
+          ) : (
+            <SendForm
+              setToken={setToken}
+              setTokenAmount={setTokenAmount}
+              setAccountAddress={setAccountAddress}
+            />
+          )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => props.setOpen(false)}>Close</Button>
-          <Button onClick={handleSubmit}>Send</Button>
-        </DialogActions>
+        {!pending && (
+          <DialogActions>
+            <Button onClick={() => props.setOpen(false)}>Close</Button>
+            <Button onClick={handleSubmit}>Send</Button>
+          </DialogActions>
+        )}
       </Dialog>
     </div>
   );

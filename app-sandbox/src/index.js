@@ -6,6 +6,9 @@ import App from "./App";
 import Address from "./pages/Address";
 import reportWebVitals from "./reportWebVitals";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
@@ -18,6 +21,7 @@ root.render(
         <Route path="/*" element={<div>Not found</div>} />
       </Routes>
     </HashRouter>
+    <ToastContainer />
   </React.StrictMode>
 );
 
