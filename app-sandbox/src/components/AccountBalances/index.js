@@ -76,7 +76,14 @@ function AccountBalances(props) {
               <TableCell>{token.appId}</TableCell>
               <TableCell>{token.name}</TableCell>
               <TableCell>
-                {Number(token?.amount ?? 0).toLocaleString()}&nbsp;{token.symbol}
+                {Number(Math.floor(token?.amount ?? 0)).toLocaleString()}
+                {
+                  token.decimals > 0 ? "." + String(
+                    Number(token?.amount ?? 0).toFixed(token.decimals)
+                  ).split(".")[1] : ""
+                }
+                &nbsp;
+                {token.symbol}
               </TableCell>
               <TableCell>
                 <ButtonGroup variant="text">
