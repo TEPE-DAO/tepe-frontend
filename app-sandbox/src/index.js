@@ -33,6 +33,7 @@ root.render(
     <HashRouter>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/mint" element={<div>Mint page</div>} />
         <Route path="/token/:id" element={<div>Asset page</div>} />
         <Route path="/address/:id" element={<Address />} />
         <Route path="/*" element={<div>Not found</div>} />

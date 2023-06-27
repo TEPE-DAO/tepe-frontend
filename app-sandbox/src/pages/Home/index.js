@@ -170,7 +170,7 @@ function Balances(props) {
             setManage(!manage);
           }}
         >
-          Manager
+          Manage
         </button>
         <AccountBalances
           manage={manage}

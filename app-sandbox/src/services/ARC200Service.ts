@@ -129,26 +129,34 @@ const transfer = async (
   addrTo: string,
   amount: string
 ) => {
-  console.log({ token, addrFrom, addrTo, amount });
-  const acc = await stdlib.connectAccount({ addr: addrFrom });
-  const [lhs, rhs, rst] = amount.split(".");
-  if (rst) throw Error("Invalid amount");
-  const lhsBn = bn(parseInt(lhs)).mul(bn(10).pow(bn(parseInt(token.decimals))));
-  const rhsBn =
-    parseInt(token.decimals) > 0
-      ? bn(
-          (rhs ?? "0")
-            .slice(0, parseInt(token.decimals))
-            .padEnd(parseInt(token.decimals), "0")
-        )
-      : bn(0);
-  const amountBn = token.decimals > 0 ? lhsBn.add(rhsBn) : lhsBn;
-  console.log({ amountBn });
-  const ctc = acc.contract(backend, token.appId);
-  const {
-    a: { transfer },
-  } = ctc;
-  return transfer(addrTo, amountBn);
+  try {
+    console.log({ token, addrFrom, addrTo, amount });
+    console.log({ token });
+    const acc = await stdlib.connectAccount({ addr: addrFrom });
+    const [lhs, rhs, rst] = amount.split(".");
+    console.log({ lhs, rhs, rst });
+    if (rst) throw Error("Invalid amount");
+    const lhsBn = bn(parseInt(lhs)).mul(
+      bn(10).pow(bn(parseInt(token.decimals)))
+    );
+    const rhsBn =
+      parseInt(token.decimals) > 0
+        ? bn(
+            (rhs ?? "0")
+              .slice(0, parseInt(token.decimals))
+              .padEnd(parseInt(token.decimals), "0")
+          )
+        : bn(0);
+    const amountBn = token.decimals > 0 ? lhsBn.add(rhsBn) : lhsBn;
+    console.log({ amountBn });
+    const ctc = acc.contract(backend, token.appId);
+    const {
+      a: { transfer },
+    } = ctc;
+    return transfer(addrTo, amountBn);
+  } catch (e) {
+    console.log({ e });
+  }
 };
 
 const withdraw = async (
