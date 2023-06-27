@@ -3,27 +3,16 @@ import { useWallet } from "@txnlab/use-wallet";
 import {
   Button,
   ButtonGroup,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  TextField,
   Tooltip,
-  Typography,
 } from "@mui/material";
-import TokenBox from "../TokenBox";
-import ChildService from "../../services/ChildService.ts";
-import MasterService from "../../services/MasterService.ts";
-import AssetService from "../../services/AssetService.ts";
 import ARC200Service from "../../services/ARC200Service.ts";
 import { makeStdLib } from "../../utils/reach";
-import { fromSome } from "../../utils/common";
 import SendIcon from "@mui/icons-material/Send";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import InfoIcon from "@mui/icons-material/Info";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const stdlib = makeStdLib();

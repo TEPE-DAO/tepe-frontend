@@ -3,12 +3,7 @@ import { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import InputBase from "@mui/material/InputBase";
 import Divider from "@mui/material/Divider";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useWallet } from "@txnlab/use-wallet";
 import { makeStdLib } from "../../utils/reach";
@@ -57,7 +52,6 @@ export default function CustomizedInputBase({
       setOptions(options);
     })();
   }, []);
-  console.log({ options });
   return (
     <>
       <InputLabel>Send</InputLabel>

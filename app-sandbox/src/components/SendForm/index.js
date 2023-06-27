@@ -26,7 +26,7 @@ function SendForm({ setToken, setTokenAmount, setAccountAddress }) {
           onTokenChange={onTokenChange}
         />
         <TextInputBase onChange={onAccountAddressChange} label="Destination" />
-        <TokenBox onChange={onTokenChange} />
+        {/*<TokenBox onChange={onTokenChange} />*/}
       </Stack>
     </div>
   );

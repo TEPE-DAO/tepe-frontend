@@ -17,6 +17,7 @@ interface TokenBoxProps {
 }
 
 export default function TokenBox(props: TokenBoxProps) {
+  alert("TokenBox");
   const { activeAccount } = useWallet();
   // TODO use events from context or hoc
   const [events, setEvents] = useState<any>(
