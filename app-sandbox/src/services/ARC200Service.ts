@@ -133,14 +133,15 @@ const transfer = async (
     console.log({ token, addrFrom, addrTo, amount });
     console.log({ token });
     const acc = await stdlib.connectAccount({ addr: addrFrom });
-    const [mlhs, rhs, rst] = amount.split(".");
-    console.log({ mlhs, rhs, rst });
+    const [mlhs, mrhs, rst] = amount.split(".");
+    console.log({ mlhs, mrhs, rst });
     if (rst) throw Error("Invalid amount: malformed number");
     const lhs = mlhs === "" ? "0" : mlhs;
     console.log({ lhs });
-    if (rhs.length > token.decimals) {
+    if (typeof mrhs === 'string' && mrhs.length > token.decimals) {
       throw Error("Invalid amount: too many decimals");
     }
+    const rhs = mrhs === "" || !mrhs ? "0" : mrhs;
     const lhsBn = bn(parseInt(lhs)).mul(
       bn(10).pow(bn(parseInt(token.decimals)))
     );
