@@ -105,7 +105,7 @@ function AccountBalances(props) {
             />
             <TableHead>
               <TableRow>
-                <TableCell>App Id</TableCell>
+                <TableCell>ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Balance</TableCell>
                 <TableCell>Action</TableCell>
@@ -114,8 +114,16 @@ function AccountBalances(props) {
             <TableBody>
               {tokens?.map((token) => (
                 <TableRow key={token.appId}>
-                  <TableCell>{token.appId}</TableCell>
-                  <TableCell>{token.name}</TableCell>
+                  <TableCell>
+                    <a href={`/#/token/${token.appId}`} target="_blank">
+                      {token.appId}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a href={`/#/token/${token.appId}`} target="_blank">
+                      {token.name}
+                    </a>
+                  </TableCell>
                   <TableCell>{displayToken(token)}</TableCell>
                   <TableCell>
                     <ButtonGroup variant="text">

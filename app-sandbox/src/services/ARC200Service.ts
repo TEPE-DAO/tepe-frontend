@@ -12,26 +12,27 @@ const ctcInfo = 249072786;
 
 const getCTCInfo = () => ctcInfo;
 
-const getEvents = (eventName: string) => async (addr: string, time?: any) => {
-  const {
-    e: { [eventName]: evt },
-  } = (
-    await stdlib.connectAccount({
-      addr,
-    })
-  ).contract(backend, ctcInfo);
-  const t = await stdlib.getNetworkTime();
-  if (time) {
-    await evt.seek(time);
-  }
-  const events: any = []; // TODO: type
-  do {
-    const event = await evt.nextUpToTime(t);
-    if (!event) break;
-    events.push(event);
-  } while (events);
-  return events;
-};
+const getEvents =
+  (eventName: string) => async (ctcInfo: number, time?: any) => {
+    const {
+      e: { [eventName]: evt },
+    } = (
+      await stdlib.connectAccount({
+        addr: zeroAddress,
+      })
+    ).contract(backend, ctcInfo);
+    const t = await stdlib.getNetworkTime();
+    if (time) {
+      await evt.seek(time);
+    }
+    const events: any = []; // TODO: type
+    do {
+      const event = await evt.nextUpToTime(t);
+      if (!event) break;
+      events.push(event);
+    } while (events);
+    return events;
+  };
 
 const getMintEvents = getEvents("Mint");
 const getTransferEvents = getEvents("Transfer");
@@ -138,7 +139,7 @@ const transfer = async (
     if (rst) throw Error("Invalid amount: malformed number");
     const lhs = mlhs === "" ? "0" : mlhs;
     console.log({ lhs });
-    if (typeof mrhs === 'string' && mrhs.length > token.decimals) {
+    if (typeof mrhs === "string" && mrhs.length > token.decimals) {
       throw Error("Invalid amount: too many decimals");
     }
     const rhs = mrhs === "" || !mrhs ? "0" : mrhs;

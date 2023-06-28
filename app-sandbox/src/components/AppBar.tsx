@@ -10,9 +10,7 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import { useWallet } from "@txnlab/use-wallet";
-import {
-  Button
-} from "@mui/material";
+import { Button } from "@mui/material";
 import { makeStdLib } from "../utils/reach.js";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
@@ -59,7 +57,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const stdlib = makeStdLib();
 
 export default function PrimarySearchAppBar() {
+
   const { providers, activeAccount } = useWallet();
+
+  console.log({ providers, activeAccount });
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(anchorEl);

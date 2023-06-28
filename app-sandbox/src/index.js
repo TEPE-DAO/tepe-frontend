@@ -4,6 +4,8 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import Address from "./pages/Address";
+import Token from "./pages/Token";
+import Transaction from "./pages/Transaction";
 import reportWebVitals from "./reportWebVitals";
 
 import { ToastContainer } from "react-toastify";
@@ -16,8 +18,9 @@ root.render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/mint" element={<div>Mint page</div>} />
-        <Route path="/token/:id" element={<div>Asset page</div>} />
+        <Route path="/token/:id" element={<Token />} />
         <Route path="/address/:id" element={<Address />} />
+        <Route path="/transaction/:id" element={<Transaction />} />
         <Route path="/*" element={<div>Not found</div>} />
       </Routes>
     </HashRouter>
