@@ -9,12 +9,14 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  Skeleton,
 } from "@mui/material";
 import ARC200Service from "../../services/ARC200Service.ts";
 import { makeStdLib } from "../../utils/reach";
 import SendIcon from "@mui/icons-material/Send";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { displayToken } from "../../utils/algorand.js";
+import SendDialog from "../SendDialog/index.js";
 
 const stdlib = makeStdLib();
 const bn = stdlib.bigNumberify;
@@ -22,9 +24,12 @@ const bn2n = stdlib.bigNumberToNumber;
 const fa = stdlib.formatAddress;
 const fawd = stdlib.formatWithDecimals;
 
+// TODO add interface for props
+
 function AccountBalances(props) {
   const { activeAccount } = useWallet();
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const reloadTokens = useCallback(async () => {
     if (!activeAccount) return;
     const tokens = [];
@@ -46,76 +51,126 @@ function AccountBalances(props) {
   // effect: reload tokens on account change
   // -------------------------------------------
   useEffect(() => {
+    if (tokens) return;
     reloadTokens();
-  }, [activeAccount, props.tokens]);
+  }, [activeAccount, props.tokens, tokens]);
   // -------------------------------------------
   return (
-    <div className="AccountBalances">
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>App Id</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Balance</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {tokens?.map((token) => (
-            <TableRow key={token.appId}>
-              <TableCell>{token.appId}</TableCell>
-              <TableCell>{token.name}</TableCell>
-              <TableCell>{displayToken(token)}</TableCell>
-              <TableCell>
-                <ButtonGroup variant="text">
-                  {/* TODO convert to dropdown with default send */}
-                  {(props.manage
-                    ? [
-                        {
-                          label: "R",
-                          desciption: "Remove",
-                          icon: <DeleteIcon color="warning" />,
-                          onClick: () => {
-                            const newTokens = tokens.filter(
-                              (el) => el.appId != token.appId
-                            );
-                            console.log({ newTokens });
-                            localStorage.setItem(
-                              "tokens",
-                              JSON.stringify(newTokens.map((el) => el.appId))
-                            );
-                            setTokens(newTokens);
-                          },
-                        },
-                      ]
-                    : [
-                        {
-                          label: "S",
-                          desciption: "Send",
-                          icon: <SendIcon />,
-                          onClick: () => {
-                            props.onSetSendDialogOpen(true);
-                          },
-                        },
-                      ]
-                  ).map((el) => (
-                    <Tooltip
-                      key={el.label}
-                      placement="top"
-                      title={el.desciption}
-                    >
-                      <Button onClick={el.onClick}>
-                        {el.icon || el.label}
-                      </Button>
-                    </Tooltip>
-                  ))}
-                </ButtonGroup>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <>
+      <SendDialog
+        open={sendDialogOpen}
+        setOpen={setSendDialogOpen}
+        setTokens={setTokens}
+        tokens={tokens}
+      />
+      <div className="AccountBalances">
+        <Table>
+          {!tokens ? (
+            <>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <Skeleton variant="text" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" />
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {props.tokens.map((appId, index) => (
+                  <TableRow key={appId}>
+                    <TableCell>
+                      <Skeleton variant="text" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton variant="text" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton variant="text" />
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </>
+          ) : (
+            <>
+              <TableHead>
+                <TableRow>
+                  <TableCell>App Id</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Balance</TableCell>
+                  <TableCell>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tokens.map((token) => (
+                  <TableRow key={token.appId}>
+                    <TableCell>{token.appId}</TableCell>
+                    <TableCell>{token.name}</TableCell>
+                    <TableCell>{displayToken(token)}</TableCell>
+                    <TableCell>
+                      <ButtonGroup variant="text">
+                        {/* TODO convert to dropdown with default send */}
+                        {(props.manage
+                          ? [
+                              {
+                                label: "R",
+                                desciption: "Remove",
+                                icon: <DeleteIcon color="warning" />,
+                                onClick: () => {
+                                  const newTokens = tokens.filter(
+                                    (el) => el.appId != token.appId
+                                  );
+                                  console.log({ newTokens });
+                                  localStorage.setItem(
+                                    "tokens",
+                                    JSON.stringify(
+                                      newTokens.map((el) => el.appId)
+                                    )
+                                  );
+                                  setTokens(newTokens);
+                                },
+                              },
+                            ]
+                          : [
+                              {
+                                label: "S",
+                                desciption: "Send",
+                                icon: <SendIcon />,
+                                onClick: () => {
+                                  setSendDialogOpen(true);
+                                },
+                              },
+                            ]
+                        ).map((el) => (
+                          <Tooltip
+                            key={el.label}
+                            placement="top"
+                            title={el.desciption}
+                          >
+                            <Button onClick={el.onClick}>
+                              {el.icon || el.label}
+                            </Button>
+                          </Tooltip>
+                        ))}
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      </div>
+    </>
   );
 }
 

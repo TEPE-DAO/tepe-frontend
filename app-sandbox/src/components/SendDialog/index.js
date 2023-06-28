@@ -20,7 +20,7 @@ function SendDialog(props) {
   const stdlib = makeStdLib();
   const fawd = stdlib.formatWithDecimals;
   useEffect(() => {
-    if(!activeAccount) return;
+    if (!activeAccount) return;
     if (token.amount) return;
     (async () => {
       const amount = fawd(
@@ -60,6 +60,8 @@ function SendDialog(props) {
             </div>
           );
           setToken({ ...token, amount: undefined });
+          props.setOpen(false);
+          props.setTokens(null);
         } else {
           alert("Transfer failed");
         }
