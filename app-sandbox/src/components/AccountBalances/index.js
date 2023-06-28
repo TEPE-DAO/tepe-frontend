@@ -14,6 +14,7 @@ import ARC200Service from "../../services/ARC200Service.ts";
 import { makeStdLib } from "../../utils/reach";
 import SendIcon from "@mui/icons-material/Send";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { displayToken } from "../../utils/algorand.js";
 
 const stdlib = makeStdLib();
 const bn = stdlib.bigNumberify;
@@ -64,16 +65,7 @@ function AccountBalances(props) {
             <TableRow key={token.appId}>
               <TableCell>{token.appId}</TableCell>
               <TableCell>{token.name}</TableCell>
-              <TableCell>
-                {Number(Math.floor(token?.amount ?? 0)).toLocaleString()}
-                {
-                  token.decimals > 0 ? "." + String(
-                    Number(token?.amount ?? 0).toFixed(token.decimals)
-                  ).split(".")[1] : ""
-                }
-                &nbsp;
-                {token.symbol}
-              </TableCell>
+              <TableCell>{displayToken(token)}</TableCell>
               <TableCell>
                 <ButtonGroup variant="text">
                   {/* TODO convert to dropdown with default send */}

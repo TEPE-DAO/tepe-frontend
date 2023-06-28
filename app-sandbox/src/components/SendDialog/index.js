@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 
 import { toast } from "react-toastify";
+import { makeStdLib } from "../../utils/reach.js";
 
 function SendDialog(props) {
   const { providers, activeAccount } = useWallet();
@@ -16,8 +17,20 @@ function SendDialog(props) {
   const [accountAddress, setAccountAddress] = useState("");
   const [doSubmit, setDoSubmit] = useState(false);
   const [pending, setPending] = useState(false);
+  const stdlib = makeStdLib();
+  const fawd = stdlib.formatWithDecimals;
+  useEffect(() => {
+    if(!activeAccount) return;
+    if (token.amount) return;
+    (async () => {
+      const amount = fawd(
+        await ARC200Service.balanceOf(token.appId, activeAccount.address),
+        token.decimals
+      );
+      setToken({ ...token, amount });
+    })();
+  }, [activeAccount, token]);
   const handleSubmit = async () => {
-    console.log({ activeAccount });
     if (!activeAccount) {
       providers
         .filter((el) => el.metadata.id === activeAccount.providerId)[0]
@@ -28,7 +41,6 @@ function SendDialog(props) {
   useEffect(() => {
     if (!activeAccount) return;
     if (!doSubmit) return;
-    console.log({ token, tokenAmount, accountAddress });
     (async () => {
       try {
         setPending(true);
@@ -47,6 +59,7 @@ function SendDialog(props) {
               ...{accountAddress.slice(-4)}
             </div>
           );
+          setToken({ ...token, amount: undefined });
         } else {
           alert("Transfer failed");
         }
@@ -84,6 +97,7 @@ function SendDialog(props) {
             </Stack>
           ) : (
             <SendForm
+              token={token}
               setToken={setToken}
               setTokenAmount={setTokenAmount}
               setAccountAddress={setAccountAddress}

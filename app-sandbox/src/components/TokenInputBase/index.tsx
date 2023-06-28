@@ -29,11 +29,13 @@ const BootstrapInput = styled(InputBase)(({ theme }) => ({
 interface CustomizedInputBaseProps {
   onTokenChange: any;
   onTokenAmountChange: any;
+  token: any;
 }
 
 export default function CustomizedInputBase({
   onTokenChange,
   onTokenAmountChange,
+  token,
 }: CustomizedInputBaseProps) {
   // -------------------------------------------
   // TODO use events from context or hoc
@@ -67,6 +69,11 @@ export default function CustomizedInputBase({
             sx={{ border: 0 }}
             id="token-select"
             onChange={onTokenChange}
+            value={
+              options
+                ? options.filter((el: any) => el.appId === token.appId)[0]
+                : null
+            }
           >
             {options?.map((option: any) => (
               <MenuItem key={option.appId} value={option}>
