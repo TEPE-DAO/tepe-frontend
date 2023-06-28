@@ -12,7 +12,7 @@ import { makeStdLib } from "../../utils/reach.js";
 
 function SendDialog(props) {
   const { providers, activeAccount } = useWallet();
-  const [token, setToken] = useState({});
+  const [token, setToken] = useState(props.token);
   const [tokenAmount, setTokenAmount] = useState("");
   const [accountAddress, setAccountAddress] = useState("");
   const [doSubmit, setDoSubmit] = useState(false);
@@ -29,7 +29,7 @@ function SendDialog(props) {
       );
       setToken({ ...token, amount });
     })();
-  }, [activeAccount, token]);
+  }, [activeAccount, token, props.token]);
   const handleSubmit = async () => {
     if (!activeAccount) {
       providers
@@ -45,7 +45,7 @@ function SendDialog(props) {
       try {
         setPending(true);
         const res = await ARC200Service.transfer(
-          token,
+          props.token,
           activeAccount.address,
           accountAddress,
           tokenAmount
@@ -99,7 +99,8 @@ function SendDialog(props) {
             </Stack>
           ) : (
             <SendForm
-              token={token}
+              token={props.token}
+              tokens={[props.token]}
               setToken={setToken}
               setTokenAmount={setTokenAmount}
               setAccountAddress={setAccountAddress}

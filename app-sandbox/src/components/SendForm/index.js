@@ -8,15 +8,14 @@ import { useState } from "react";
 
 import { useCallback } from "react";
 import { displayToken } from "../../utils/algorand.js";
-function SendForm({ token, setToken, setTokenAmount, setAccountAddress }) {
-  const [tokenOnce, setTokenOnce] = useState(Object.keys(token).length > 0);
-  const onTokenChange = useCallback(
-    (e, newValue) => {
-      setToken(newValue?.props?.value ?? {}); // HACK
-      setTokenOnce(true);
-    },
-    [setToken]
-  );
+function SendForm({
+  token,
+  tokens,
+  setToken,
+  setTokenAmount,
+  setAccountAddress,
+}) {
+  console.log({ SendForm: { token } });
   const onTokenAmountChange = useCallback(
     (e) => setTokenAmount(e.target.value),
     [setTokenAmount]
@@ -27,22 +26,13 @@ function SendForm({ token, setToken, setTokenAmount, setAccountAddress }) {
   );
   return (
     <div className="SendForm">
-      <Stack spacing={tokenOnce ? 5 : 9}>
+      <Stack spacing={5}>
         <TokenInputBase
           token={token}
+          tokens={tokens}
           onTokenAmountChange={onTokenAmountChange}
-          onTokenChange={onTokenChange}
+          disabled={true}
         />
-        {token &&
-          (token.amount && token.symbol ? (
-            <Box>
-              <Typography variant="body2">
-                Available: {displayToken(token)}
-              </Typography>
-            </Box>
-          ) : (
-            tokenOnce && <Skeleton height="30" />
-          ))}
         <TextInputBase onChange={onAccountAddressChange} label="Destination" />
       </Stack>
     </div>

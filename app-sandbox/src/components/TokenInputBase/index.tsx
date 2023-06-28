@@ -3,11 +3,20 @@ import { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import InputBase from "@mui/material/InputBase";
 import Divider from "@mui/material/Divider";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Box,
+  Typography,
+  Skeleton,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useWallet } from "@txnlab/use-wallet";
 import { makeStdLib } from "../../utils/reach";
 import ARC200Service from "../../services/ARC200Service";
+import { displayToken } from "../../utils/algorand";
 
 const stdlib = makeStdLib();
 const bn2n = stdlib.bigNumberToNumber;
@@ -30,30 +39,33 @@ interface CustomizedInputBaseProps {
   onTokenChange: any;
   onTokenAmountChange: any;
   token: any;
+  tokens: any;
+  disabled: boolean;
 }
 
 export default function CustomizedInputBase({
   onTokenChange,
   onTokenAmountChange,
   token,
+  tokens,
+  disabled,
 }: CustomizedInputBaseProps) {
+  const { activeAccount } = useWallet();
+  const [selected, setSelected] = useState<any>(token);
   // -------------------------------------------
-  // TODO use events from context or hoc
-  const tokens = JSON.parse(localStorage.getItem("tokens") || "[249906631]");
-  const [options, setOptions] = useState<any>(null); // TODO type me
+  const [options] = useState<any>(tokens); // TODO type me
   // EFFECT: get token options
   useEffect(() => {
-    if (options) return;
+    if (!activeAccount) return;
+    if (selected.amount) return;
     (async () => {
-      const options: any = [];
-      for (const ctcInfo of tokens) {
-        const metadata = await ARC200Service.getTokenMetadata(ctcInfo);
-        const option = { appId: ctcInfo, ...metadata };
-        options.push(option);
-      }
-      setOptions(options);
+      const amount = await ARC200Service.balanceOf(
+        selected.appId,
+        activeAccount?.address ?? ""
+      );
+      setSelected({ ...selected, amount });
     })();
-  }, []);
+  }, [activeAccount, selected]);
   return (
     <>
       <InputLabel>Send</InputLabel>
@@ -61,15 +73,29 @@ export default function CustomizedInputBase({
         component="form"
         sx={{ p: "2px 4px", display: "flex", alignItems: "center", width: 400 }}
       >
-        <InputBase sx={{ ml: 1, flex: 1 }} onChange={onTokenAmountChange} />
+        <InputBase
+          sx={{ ml: 1, flex: 1, padding: "10px 26px 10px 12px" }}
+          onChange={onTokenAmountChange}
+        />
         <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-        <FormControl style={{ minWidth: 100, border: 0 }} sx={{ m: 1 }}>
-          <Select
+        <FormControl
+          style={{ minWidth: 100, border: 0 }}
+          sx={{
+            m: 1,
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="body2">{token.symbol}</Typography>
+          {/*<Select
+            disabled={disabled}
             input={<BootstrapInput />}
             sx={{ border: 0 }}
             id="token-select"
-            onChange={onTokenChange}
-            value={
+            onChange={(a, b: any) => {
+              onTokenChange(a, b);
+              setSelected(b?.props?.value || token);
+            }}
+            defaultValue={
               options
                 ? options.filter((el: any) => el.appId === token.appId)[0]
                 : null
@@ -80,9 +106,18 @@ export default function CustomizedInputBase({
                 {option.symbol}
               </MenuItem>
             ))}
-          </Select>
+            </Select>*/}
         </FormControl>
       </Paper>
+      {selected.amount && selected.symbol ? (
+        <Box>
+          <Typography variant="body2">
+            Available: {displayToken(selected)}
+          </Typography>
+        </Box>
+      ) : (
+        <Skeleton variant="text" />
+      )}
     </>
   );
 }

@@ -4,8 +4,6 @@ import * as React from "react";
 import Blink from "react-blink-text";
 import AccountBalances from "../../components/AccountBalances";
 
-const version = ""; // V1
-
 const Connect = () => {
   return (
     <div className="Home">
