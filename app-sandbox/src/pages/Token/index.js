@@ -49,7 +49,7 @@ const User = (props) => {
   );
 };
 
-function Address() {
+function Page() {
   const { id: appId } = useParams();
   const { activeAccount } = useWallet();
   const [token, setToken] = React.useState(null);
@@ -80,4 +80,4 @@ function Address() {
   return <User {...token} transactions={transactions} />;
 }
 
-export default Address;
+export default Page;

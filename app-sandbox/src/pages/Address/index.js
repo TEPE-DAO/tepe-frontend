@@ -76,7 +76,7 @@ const User = (props) => {
   );
 };
 
-function Address() {
+function Page() {
   const { id } = useParams();
   console.log(id);
   const { activeAccount } = useWallet();
@@ -104,4 +104,4 @@ function Address() {
   return <User {...token} />;
 }
 
-export default Address;
+export default Page;

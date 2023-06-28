@@ -3,25 +3,7 @@ import { useWallet } from "@txnlab/use-wallet";
 import * as React from "react";
 import Blink from "react-blink-text";
 import AccountBalances from "../../components/AccountBalances";
-
-const Connect = () => {
-  return (
-    <div className="Home">
-      <Stack direction="column" gap={1}>
-        <Stack direction="column" gap={5} style={{ textAlign: "center" }}>
-          <Blink
-            color="grey"
-            blinkTime={3}
-            text="Connect wallet to continue"
-            fontSize="20"
-          >
-            Connect wallet to continue
-          </Blink>
-        </Stack>
-      </Stack>
-    </div>
-  );
-};
+import Connect from "../../components/Connect";
 
 function Balances(props) {
   const [tokens, setTokens] = React.useState(props.tokens);

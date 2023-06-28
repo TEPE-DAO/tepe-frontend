@@ -52,7 +52,6 @@ function AccountBalances(props) {
     if (tokens) return;
     reloadTokens();
   }, [activeAccount, props.tokens, tokens]);
-  console.log({ AccountBalances: { tokens, token } });
   // -------------------------------------------
   return (
     <div className="AccountBalances">
@@ -88,7 +87,9 @@ function AccountBalances(props) {
                     <TableCell>
                       <Skeleton variant="text" />
                     </TableCell>
-                    <TableCell></TableCell>
+                    <TableCell>
+                      <Skeleton variant="text" />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

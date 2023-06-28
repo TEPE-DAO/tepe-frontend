@@ -8,8 +8,10 @@ const bn = stdlib.bigNumberify;
 const bn2n = stdlib.bigNumberToNumber;
 const bn2bi = stdlib.bigNumberToBigInt;
 
+// deprecated
 const ctcInfo = 249072786;
 
+// deprecated
 const getCTCInfo = () => ctcInfo;
 
 const getEvents =
@@ -37,6 +39,21 @@ const getEvents =
 const getMintEvents = getEvents("Mint");
 const getTransferEvents = getEvents("Transfer");
 const getApproveEvents = getEvents("Approve");
+
+const launch = async (addr: string, params: any) => {
+  const acc = await stdlib.connectAccount({ addr });
+  const ctc = acc.contract(backend);
+  const ctcInfo = await stdlib.withDisconnect(() =>
+    ctc.p.Deployer({
+      params,
+      ready: (ctcInfo: any) => {
+        console.log("Ready!");
+        stdlib.disconnect(ctcInfo); // causes withDisconnect to immediately return ctcInfo
+      },
+    })
+  );
+  return ctcInfo;
+};
 
 const getTokenMetadata = async (ctcInfo: number) => {
   const { v } = (
@@ -191,6 +208,7 @@ const withdraw = async (
 };
 
 export default {
+  launch,
   approve,
   deposit,
   transfer,

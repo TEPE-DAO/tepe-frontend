@@ -2,6 +2,8 @@ import React from "react";
 
 import "./App.css";
 
+import { Routes, Route } from "react-router-dom";
+
 import algosdk from "algosdk";
 
 import {
@@ -16,6 +18,7 @@ import { DaffiWalletConnect } from "@daffiwallet/connect";
 import { WalletConnectModalSign } from "@walletconnect/modal-sign-html";
 
 import Home from "./pages/Home";
+import Mint from "./pages/Mint";
 import AppBar from "./components/AppBar.tsx";
 
 function App() {
@@ -54,9 +57,12 @@ function App() {
   return (
     <WalletProvider value={providers}>
       <div className="App">
-        <AppBar />
-        <Home />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/mint" element={<Mint />} />
+        </Routes>
       </div>
+      <AppBar />
     </WalletProvider>
   );
 }

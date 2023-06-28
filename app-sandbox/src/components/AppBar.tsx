@@ -8,11 +8,12 @@ import InputBase from "@mui/material/InputBase";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
 import { useWallet } from "@txnlab/use-wallet";
 import { Button } from "@mui/material";
 import { makeStdLib } from "../utils/reach.js";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import * as Copy from "react-copy-to-clipboard";
+import { toast } from "react-toastify";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -57,8 +58,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const stdlib = makeStdLib();
 
 export default function PrimarySearchAppBar() {
+  const { CopyToClipboard } = Copy;
 
   const { providers, activeAccount } = useWallet();
+  const notify = (msg: string) => toast(msg);
 
   console.log({ providers, activeAccount });
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -167,11 +170,19 @@ export default function PrimarySearchAppBar() {
               >
                 {activeAccount.address.slice(0, 4)}...
                 {activeAccount.address.slice(-4)}
-                <ContentCopyIcon
-                  onClick={() => {
-                    alert("Copy address to clipboard. Not yet implmented"); // TODO implement copy address
+                <CopyToClipboard
+                  text={activeAccount.address}
+                  onCopy={() => {
+                    notify(
+                      `Copied address ${activeAccount.address.slice(
+                        0,
+                        4
+                      )}...${activeAccount.address.slice(-4)} to clipboard!`
+                    );
                   }}
-                />
+                >
+                  <ContentCopyIcon />
+                </CopyToClipboard>
                 {providers &&
                   activeAccount &&
                   providers.map(

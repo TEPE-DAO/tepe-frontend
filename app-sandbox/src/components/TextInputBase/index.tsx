@@ -6,11 +6,13 @@ import { InputLabel } from "@mui/material";
 interface CustomizedInputBaseProps {
   onChange: any;
   label: string;
+  type: string;
 }
 
 export default function CustomizedInputBase({
   onChange,
   label,
+  type,
 }: CustomizedInputBaseProps) {
   return (
     <>
@@ -26,7 +28,7 @@ export default function CustomizedInputBase({
           height: "3.4375em",
         }}
       >
-        <InputBase sx={{ ml: 1, flex: 1 }} onChange={onChange} />
+        <InputBase type={type} sx={{ ml: 1, flex: 1 }} onChange={onChange} />
       </Paper>
     </>
   );
