@@ -28,6 +28,11 @@ export const makeStdLib = () => {
     ALGO_INDEXER_PORT: "",
   };
   switch (wallet?.state?.activeAccount?.providerId) {
+    // TODO fix issue introduced afte upgrading pera wallet
+    // (1) options bump down pera wallet
+    // (2) use wallet connect for pera wallet
+    // until the issue is isolated and fixed
+    /*
     case "pera":
       stdlib.setWalletFallback(
         stdlib.walletFallback({
@@ -36,6 +41,7 @@ export const makeStdLib = () => {
         })
       );
       break;
+    */
     case "myalgo":
       stdlib.setWalletFallback(
         stdlib.walletFallback({
@@ -44,6 +50,9 @@ export const makeStdLib = () => {
         })
       );
       break;
+    // case daffi sorta works
+    // case defly
+    case "pera":
     default:
       stdlib.setWalletFallback(
         stdlib.walletFallback({

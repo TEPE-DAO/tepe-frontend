@@ -126,7 +126,8 @@ function AccountBalances(props) {
                     </a>{" "}
                     <br />
                     <a href={`/#/transaction/${token.appId}`} target="_blank">
-                      Transactions
+                      Transactions for {activeAccount.address.slice(0, 4)}...
+                      {activeAccount.address.slice(-4)}
                     </a>
                   </TableCell>
                   <TableCell>{displayToken(token)}</TableCell>
