@@ -1,13 +1,29 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { HashRouter, Routes, Route } from "react-router-dom";
+import "./index.css";
+import App from "./App";
+import Mint from "./pages/Mint";
+import Address from "./pages/Address";
+import Token from "./pages/Token";
+import Transaction from "./pages/Transaction";
+import reportWebVitals from "./reportWebVitals";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <HashRouter>
+      <Routes>
+        <Route path="/token/:id" element={<Token />} />
+        <Route path="/address/:id" element={<Address />} />
+        <Route path="/transaction/:id" element={<Transaction />} />
+        <Route path="/*" element={<App />} />
+      </Routes>
+    </HashRouter>
+    <ToastContainer />
   </React.StrictMode>
 );
 
