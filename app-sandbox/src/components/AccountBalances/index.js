@@ -118,14 +118,15 @@ function AccountBalances(props) {
             <TableBody>
               {tokens?.map((token) => (
                 <TableRow key={token.appId}>
+                  <TableCell>{token.appId}</TableCell>
                   <TableCell>
+                    {token.name} <br />
                     <a href={`/#/token/${token.appId}`} target="_blank">
-                      {token.appId}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <a href={`/#/token/${token.appId}`} target="_blank">
-                      {token.name}
+                      Token Info
+                    </a>{" "}
+                    <br />
+                    <a href={`/#/transaction/${token.appId}`} target="_blank">
+                      Transactions
                     </a>
                   </TableCell>
                   <TableCell>{displayToken(token)}</TableCell>

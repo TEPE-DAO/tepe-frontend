@@ -30,29 +30,34 @@ const User = (props) => {
             {props.totalSupply && `Total Supply: ${props.totalSupply}`}
             <br />
           </code>
-          {props.holder && (
-            <span style={{ overflow: "hidden" }}>Holder: {props.holder}</span>
-          )}
           {props.balance &&
             props.symbol &&
             `Balance: ${props.balance} ${props.symbol}`}
         </Stack>
       </Stack>
-      <h2>Holders</h2>
-      <ul>
-        <li>addr:balance</li>
-        {props?.holders?.map((el) => (
-          <li>{el.join(":")}</li>
-        ))}
-      </ul>
-      <h2>Transactions</h2>
-      <h3>For: {activeAccount?.address}</h3>
-      <ul>
-        <li>block:from:to:amount</li>
-        {props?.transactions?.map((el) => (
-          <li>{el.join(":")}</li>
-        ))}
-      </ul>
+      <h2>
+        Holders {props?.holders?.length > 0 ? props?.holders?.length : "..."}
+      </h2>
+      <div style={{ maxHeight: "300px", overflowY: "scroll" }}>
+        <ul>
+          <li>addr:balance</li>
+          {props?.holders?.map((el) => (
+            <li>{el.join(":")}</li>
+          ))}
+        </ul>
+      </div>
+      <h2>
+        Transactions{" "}
+        {props?.transactions?.length > 0 ? props?.transactions?.length : "..."}
+      </h2>
+      <div>
+        <ul>
+          <li>block:from:to:amount</li>
+          {props?.transactions?.map((el) => (
+            <li>{el.join(":")}</li>
+          ))}
+        </ul>
+      </div>
     </>
   );
 };
@@ -103,7 +108,6 @@ function Page() {
       setToken(token);
     })();
   }, [activeAccount]);
-  console.log({ token });
   return <User {...token} transactions={transactions} holders={holders} />;
 }
 
