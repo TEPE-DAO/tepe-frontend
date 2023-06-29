@@ -25,7 +25,8 @@ const User = (props) => {
             <br />
             {props.symbol && `Symbol: ${props.symbol}`}
             <br />
-            {props.decimals && `Decimals: ${props.decimals}`}
+            {typeof props.decimals === "number" &&
+              `Decimals: ${props.decimals}`}
             <br />
             {props.totalSupply && `Total Supply: ${props.totalSupply}`}
             <br />
@@ -42,7 +43,9 @@ const User = (props) => {
         <ul>
           <li>addr:balance</li>
           {props?.holders?.map((el) => (
-            <li>{el.join(":")}</li>
+            <li>
+              {[...el, Number(el[1] / props.totalSupply).toFixed(2)].join(":")}
+            </li>
           ))}
         </ul>
       </div>

@@ -7,9 +7,11 @@ interface CustomizedInputBaseProps {
   onChange: any;
   label: string;
   type: string;
+  value: string | number;
 }
 
 export default function CustomizedInputBase({
+  value,
   onChange,
   label,
   type,
@@ -28,7 +30,12 @@ export default function CustomizedInputBase({
           height: "3.4375em",
         }}
       >
-        <InputBase type={type} sx={{ ml: 1, flex: 1 }} onChange={onChange} />
+        <InputBase
+          value={value}
+          type={type}
+          sx={{ ml: 1, flex: 1 }}
+          onChange={onChange}
+        />
       </Paper>
     </>
   );

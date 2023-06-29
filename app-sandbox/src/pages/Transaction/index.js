@@ -25,7 +25,8 @@ const User = (props) => {
             <br />
             {props.symbol && `Symbol: ${props.symbol}`}
             <br />
-            {props.decimals && `Decimals: ${props.decimals}`}
+            {typeof props.decimals === "number" &&
+              `Decimals: ${props.decimals}`}
             <br />
             {props.totalSupply && `Total Supply: ${props.totalSupply}`}
             <br />

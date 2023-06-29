@@ -67,17 +67,22 @@ const getTokenMetadata = async (ctcInfo: number) => {
       const index = str.indexOf("\x00");
       if (index > 0) {
         return str.slice(0, str.indexOf("\x00"));
+      } else {
+        return str;
       }
     };
     const {
-      name,
-      symbol,
+      name: dName,
+      symbol: dSymbol,
       decimals: decimalsBn,
       totalSupply: totalSupplyBn,
     } = fromSome(await v.state(), {});
+    console.log({ dName, dSymbol });
+    const name = prepareString(dName);
+    const symbol = prepareString(dSymbol);
     const decimals = bn2n(decimalsBn);
     const totalSupply = bn2bi(totalSupplyBn).toString();
-    const metadata = { name, symbol, decimals, totalSupply };
+    const metadata = { name: name, symbol, decimals, totalSupply };
     localStorage.setItem(`token-${ctcInfo}`, JSON.stringify(metadata));
     return metadata;
   } else {
