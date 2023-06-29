@@ -32,6 +32,7 @@ export const makeStdLib = () => {
     // (1) options bump down pera wallet
     // (2) use wallet connect for pera wallet
     // until the issue is isolated and fixed
+    // See https://github.com/reach-sh/reach-lang/issues/1548
     /*
     case "pera":
       stdlib.setWalletFallback(
