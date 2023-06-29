@@ -56,24 +56,33 @@ const launch = async (addr: string, params: any) => {
 };
 
 const getTokenMetadata = async (ctcInfo: number) => {
-  const { v } = (
-    await stdlib.connectAccount({
-      addr: zeroAddress,
-    })
-  ).contract(backend, ctcInfo);
-  const prepareString = (str: string) => {
-    const index = str.indexOf("\x00");
-    if (index > 0) {
-      return str.slice(0, str.indexOf("\x00"));
-    }
-  };
-  // TODO use state
-  const name = prepareString(fromSome(await v.name(), ""));
-  const symbol = prepareString(fromSome(await v.symbol(), ""));
-  const decimals = bn2n(fromSome(await v.decimals(), bn(0)));
-  const totalSupply = bn2bi(fromSome(await v.totalSupply(), bn(0))).toString();
-  const metadata = { name, symbol, decimals, totalSupply };
-  return metadata;
+  const storedTokenMetadata = localStorage.getItem(`token-${ctcInfo}`);
+  if (!storedTokenMetadata) {
+    const { v } = (
+      await stdlib.connectAccount({
+        addr: zeroAddress,
+      })
+    ).contract(backend, ctcInfo);
+    const prepareString = (str: string) => {
+      const index = str.indexOf("\x00");
+      if (index > 0) {
+        return str.slice(0, str.indexOf("\x00"));
+      }
+    };
+    const {
+      name,
+      symbol,
+      decimals: decimalsBn,
+      totalSupply: totalSupplyBn,
+    } = fromSome(await v.state(), {});
+    const decimals = bn2n(decimalsBn);
+    const totalSupply = bn2bi(totalSupplyBn).toString();
+    const metadata = { name, symbol, decimals, totalSupply };
+    localStorage.setItem(`token-${ctcInfo}`, JSON.stringify(metadata));
+    return metadata;
+  } else {
+    return JSON.parse(storedTokenMetadata);
+  }
 };
 
 const balanceOf = async (ctcInfo: number, addr: string) => {
@@ -148,8 +157,6 @@ const transfer = async (
   amount: string
 ) => {
   try {
-    console.log({ token, addrFrom, addrTo, amount });
-    console.log({ token });
     const acc = await stdlib.connectAccount({ addr: addrFrom });
     const [mlhs, mrhs, rst] = amount.split(".");
     console.log({ mlhs, mrhs, rst });
@@ -172,7 +179,6 @@ const transfer = async (
           )
         : bn(0);
     const amountBn = token.decimals > 0 ? lhsBn.add(rhsBn) : lhsBn;
-    console.log({ amountBn });
     const ctc = acc.contract(backend, token.appId);
     const {
       a: { transfer },

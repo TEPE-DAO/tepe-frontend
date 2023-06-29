@@ -70,18 +70,16 @@ function MintForm({
     (async () => {
       setProgress(true);
       try {
-        console.log(
-          `${name} ${symbol} ${decimals} ${totalSupply} ${managerAddress}`
-        );
+        console.log(`${name} ${symbol} ${decimals} ${totalSupply}`);
         const params = {
           ...paramsTemplate,
-          managerAddress,
+          managerAddress: activeAccount.address,
           ...{
             meta: {
               name,
               symbol,
               decimals,
-              totalSupply,
+              totalSupply: stdlib.parseCurrency(totalSupply, Number(decimals)),
             },
           },
         };
@@ -101,8 +99,7 @@ function MintForm({
           <div>
             Mint successful!
             <br />
-            {fawd(bn(totalSupply), Number(decimals))} {symbol} sent to{" "}
-            {managerAddress.slice(0, 4)}
+            {totalSupply} {symbol} sent to {managerAddress.slice(0, 4)}
             ...{managerAddress.slice(-4)}
           </div>
         );
@@ -167,16 +164,35 @@ function MintForm({
               name: "meta.totalSupply",
               label: "Total Supply",
               type: "number",
-              onChange: (e) => setTotalSupply(e.target.value),
+              value: totalSupply,
+              onChange: (e) => {
+                try {
+                  setTotalSupply(
+                    stdlib.formatWithDecimals(
+                      stdlib.parseCurrency(e.target.value, Number(decimals)),
+                      Number(decimals)
+                    )
+                  );
+                } catch (e) {
+                  console.log(e);
+                }
+              },
             },
+            /*
             {
               name: "managerAddress",
               label: "Manager Address",
               type: "text",
               onChange: (e) => setManagerAddress(e.target.value),
             },
-          ].map(({ name, label, type, onChange }) => (
-            <TextInputBase type={type} onChange={onChange} label={label} />
+            */
+          ].map(({ name, label, type, value, onChange }) => (
+            <TextInputBase
+              value={value}
+              type={type}
+              onChange={onChange}
+              label={label}
+            />
           ))}
           <Button variant="contained" onClick={handleMint}>
             Mint

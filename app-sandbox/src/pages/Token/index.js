@@ -4,6 +4,7 @@ import * as React from "react";
 import { makeStdLib } from "../../utils/reach";
 import ARC200Service from "../../services/ARC200Service";
 import { useParams } from "react-router-dom";
+import { zeroAddress } from "../../utils/algorand";
 
 const stdlib = makeStdLib();
 const fa = stdlib.formatAddress;
@@ -37,8 +38,15 @@ const User = (props) => {
             `Balance: ${props.balance} ${props.symbol}`}
         </Stack>
       </Stack>
-      <h1>Transactions</h1>
-      <h2>For: {activeAccount?.address}</h2>
+      <h2>Holders</h2>
+      <ul>
+        <li>addr:balance</li>
+        {props?.holders?.map((el) => (
+          <li>{el.join(":")}</li>
+        ))}
+      </ul>
+      <h2>Transactions</h2>
+      <h3>For: {activeAccount?.address}</h3>
       <ul>
         <li>block:from:to:amount</li>
         {props?.transactions?.map((el) => (
@@ -54,21 +62,40 @@ function Page() {
   const { activeAccount } = useWallet();
   const [token, setToken] = React.useState(null);
   const [transactions, setTransactions] = React.useState([]);
+  const [holders, setHolders] = React.useState([]);
   React.useEffect(() => {
     if (!activeAccount) return;
+    if (!token) return;
     (async () => {
       const ret = (await ARC200Service.getTransferEvents(appId))
-        .map(({ when, what }) => [
-          bn2n(when),
-          fa(what[0]),
-          fa(what[1]),
-          bn2bi(what[2]).toString(),
-        ])
+        .map(({ when, what }) => {
+          return [
+            bn2n(when),
+            fa(what[0]),
+            fa(what[1]),
+            bn2bi(what[2]).toString(),
+          ];
+        })
         .reverse();
-      console.log(ret);
+      const holders = {
+        [zeroAddress]: Number(token.totalSupply),
+      };
+      for (const [_, from, to, amountStr] of ret) {
+        const amount = Number(amountStr);
+        if (holders[from]) holders[from] -= amount;
+        else holders[from] = -amount;
+        if (holders[to]) holders[to] += amount;
+        else holders[to] = amount;
+      }
+      const balances = Object.entries(holders);
+      balances.sort(([a1, a2], [b1, b2]) => {
+        if (a2 === b2) return a1.localeCompare(b1);
+        return b2 - a2;
+      });
+      setHolders(balances);
       setTransactions(ret);
     })();
-  }, [activeAccount]);
+  }, [activeAccount, token]);
   React.useEffect(() => {
     (async () => {
       const tokenMetadata = await ARC200Service.getTokenMetadata(appId);
@@ -77,7 +104,7 @@ function Page() {
     })();
   }, [activeAccount]);
   console.log({ token });
-  return <User {...token} transactions={transactions} />;
+  return <User {...token} transactions={transactions} holders={holders} />;
 }
 
 export default Page;

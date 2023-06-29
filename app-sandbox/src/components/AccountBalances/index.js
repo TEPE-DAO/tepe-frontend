@@ -51,7 +51,10 @@ function AccountBalances(props) {
   useEffect(() => {
     if (tokens) return;
     reloadTokens();
-  }, [activeAccount, props.tokens, tokens]);
+  }, [activeAccount, tokens]);
+  useEffect(() => {
+    reloadTokens();
+  }, [props.tokens]);
   // -------------------------------------------
   return (
     <div className="AccountBalances">
